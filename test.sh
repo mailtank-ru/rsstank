@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 if [[ -z $RSSTANK_CONFIG ]]; then
     RSSTANK_CONFIG=rsstank.config_local.TestingConfig 
 fi
