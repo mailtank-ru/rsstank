@@ -1,0 +1,6 @@
+# coding: utf-8
+from .config import TestingConfig
+
+
+class TestingConfig(TestingConfig):
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:@localhost/rsstank_test'

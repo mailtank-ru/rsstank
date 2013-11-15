@@ -1,0 +1,11 @@
+language: python
+python:
+  - "2.7"
+before_script:
+  - mysql -e 'create database mailtank;'
+  - cp ./rsstank/config_local.py-travis ./rsstank/config_local.py
+install:
+  - pip install -r requirements/basic.txt
+  - pip install -r requirements/dev.txt
+script:
+  - ./test.sh
