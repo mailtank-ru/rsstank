@@ -9,6 +9,7 @@ Flask-Migrate==0.1.4
 Flask-SQLAlchemy==1.0
 Flask-Script==0.6.3
 
+requests==2.0.1
 alembic==0.6.0
 distribute==0.6.34
 itsdangerous==0.23
