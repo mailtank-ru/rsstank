@@ -3,11 +3,14 @@
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 
-import rsstank
+import rsstank.commands
 
 
 manager = Manager(rsstank.app)
 manager.add_command('db', MigrateCommand)
+manager.command(rsstank.commands.sync_feed_lists)
+manager.command(rsstank.commands.poll_feeds)
+manager.command(rsstank.commands.send_feeds)
 
 
 if __name__ == '__main__':
