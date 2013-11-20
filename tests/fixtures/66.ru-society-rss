@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+	<channel>
+		<title>
+                            66.ru — Городской портал Екатеринбурга
+                    </title>
+		<link>http://66.ru</link>
+		<description><![CDATA[Удобные новости]]></description>
+		<image>
+			<url>http://s.66.ru/localStorage/3c/87/06/84/3c870684.gif</url>
+			<title>66.ru — Городской портал Екатеринбурга</title>
+			<link>http://66.ru</link>
+		</image>
+		<language>ru</language>
+
+
+				<item>
+			<title>РЖД сливает плацкартные вагоны</title>
+			<link>
+									http://66.ru/news/society/147137/
+							</link>
+			<guid isPermaLink="false">66.ru:news:147137</guid>
+			<description>Президент РЖД хочет заменить их двухэтажными.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/a9/1f/fd/de/a91ffdde_resizedScaled_200to133.jpg" type="image/jpeg" />
+						<pubDate>2013-11-14T17:38:30+06:00</pubDate>
+		</item>
+				<item>
+			<title>В Кольцово открылся детский сад с рестораном</title>
+			<link>
+									http://66.ru/news/society/147114/
+							</link>
+			<guid isPermaLink="false">66.ru:news:147114</guid>
+			<description>Садик, который строители называют энергоэффективным, находится в переулке Утреннем и с завтрашнего дня начнет работу.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/b9/78/c3/fb/b978c3fb_resizedScaled_200to133.jpg" type="image/jpeg" />
+						<pubDate>2013-11-14T14:05:07+06:00</pubDate>
+		</item>
+				<item>
+			<title>Госдума предлагает запретить киногероям употреблять алкоголь</title>
+			<link>
+									http://66.ru/news/society/147057/
+							</link>
+			<guid isPermaLink="false">66.ru:news:147057</guid>
+			<description>Ранее в России уже запретили демонстрацию курения в фильмах.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/c3/29/09/2d/c329092d_resizedScaled_200to151.jpg" type="image/jpeg" />
+						<pubDate>2013-11-13T17:35:22+06:00</pubDate>
+		</item>
+				<item>
+			<title>Депутат предлагает не пускать в Россию иностранцев с судимостью</title>
+			<link>
+									http://66.ru/news/society/147038/
+							</link>
+			<guid isPermaLink="false">66.ru:news:147038</guid>
+			<description>Законопроект распространяется на людей, совершивших тяжкие преступления.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/56/b6/4e/c8/56b64ec8_resizedScaled_200to133.jpg" type="image/jpeg" />
+						<pubDate>2013-11-13T15:12:17+06:00</pubDate>
+		</item>
+				<item>
+			<title>«Машины на тротуаре? Не проблема». Незрячие люди прошли маршем по центру Екатеринбурга</title>
+			<link>
+									http://66.ru/news/society/147024/
+							</link>
+			<guid isPermaLink="false">66.ru:news:147024</guid>
+			<description>На этот раз обошлось без транспарантов и требований к чиновникам обратить внимание на проблемы инвалидов. С собой они принесли только белые шары и трости.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/77/b3/1b/b8/77b31bb8_resizedScaled_200to133.jpg" type="image/jpeg" />
+						<pubDate>2013-11-13T14:55:00+06:00</pubDate>
+		</item>
+				<item>
+			<title>Школьники смогут переходить в следующий класс с двойками</title>
+			<link>
+									http://66.ru/news/society/147002/
+							</link>
+			<guid isPermaLink="false">66.ru:news:147002</guid>
+			<description>Однако такой перевод будет условным.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/27/8e/81/51/278e8151_resizedScaled_200to132.jpg" type="image/jpeg" />
+						<pubDate>2013-11-13T10:10:51+06:00</pubDate>
+		</item>
+				<item>
+			<title>Государство даст безработным из Североуральска деньги на переезд</title>
+			<link>
+									http://66.ru/news/society/146999/
+							</link>
+			<guid isPermaLink="false">66.ru:news:146999</guid>
+			<description>Российское правительство принимает меры для поддержки моногородов.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/40/f1/b4/f5/40f1b4f5_resizedScaled_200to133.png" type="image/png" />
+						<pubDate>2013-11-13T09:34:50+06:00</pubDate>
+		</item>
+				<item>
+			<title>Россия представила в ООН проект резолюции против героизации нацизма</title>
+			<link>
+									http://66.ru/news/society/146993/
+							</link>
+			<guid isPermaLink="false">66.ru:news:146993</guid>
+			<description>Соавторами документа стали почти сорок государств.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/a6/4f/a0/ca/a64fa0ca_resizedScaled_200to138.jpg" type="image/jpeg" />
+						<pubDate>2013-11-13T08:05:31+06:00</pubDate>
+		</item>
+				<item>
+			<title>Посылки из Китая в Екатеринбург будут идти в два раза быстрее</title>
+			<link>
+									http://66.ru/news/society/146991/
+							</link>
+			<guid isPermaLink="false">66.ru:news:146991</guid>
+			<description>Теперь Почта России не будет пересылать их через Москву.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/cd/a6/9a/76/cda69a76_resizedScaled_200to133.jpg" type="image/jpeg" />
+						<pubDate>2013-11-12T21:01:38+06:00</pubDate>
+		</item>
+				<item>
+			<title>Госдума узаконила принудительное лечение наркоманов</title>
+			<link>
+									http://66.ru/news/society/146990/
+							</link>
+			<guid isPermaLink="false">66.ru:news:146990</guid>
+			<description>Согласно принятому сегодня в третьем чтении закону, суд получит право направлять наркозависимых на лечение и наказывать их за уклонение от реабилитации.</description>
+			<category>Общество</category>
+							<enclosure url="http://s.66.ru/localStorage/news/1f/0c/03/5a/1f0c035a_resizedScaled_200to133.jpg" type="image/jpeg" />
+						<pubDate>2013-11-12T20:18:44+06:00</pubDate>
+		</item>
+		
+		<generator>66.ru</generator>
+	</channel>
+</rss>

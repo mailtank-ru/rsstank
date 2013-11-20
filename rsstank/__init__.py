@@ -10,7 +10,6 @@ app = flask.Flask(__name__)
 config = os.environ.get('RSSTANK_CONFIG', 'rsstank.config.DefaultConfig')
 app.config.from_object(config)
 
-
 db = SQLAlchemy(app)
 migrate = Migrate(app)
 
