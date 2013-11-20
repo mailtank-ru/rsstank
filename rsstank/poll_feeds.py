@@ -3,6 +3,7 @@ import time
 import datetime
 import collections
 import concurrent.futures
+import logging
 
 import requests
 import feedparser
@@ -11,6 +12,9 @@ import sqlalchemy
 from furl import furl
 
 from .models import db, Feed, FeedItem
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_robots_txt_url(host, scheme='http'):
@@ -41,9 +45,11 @@ def get_robots_rules(host, agent):
 
 def poll_feed(feed):
     """Сохраняет элементы фида в БД."""
+    logger.info('Polling %r.', feed)
     response = requests.get(feed.url)
     feed_data = feedparser.parse(response.content)
 
+    c = 0
     for entry in feed_data.entries:
         feed_item = FeedItem.from_feedparser_entry(entry)
         feed_item.feed_id = feed.id
@@ -52,10 +58,12 @@ def poll_feed(feed):
         db.session.add(feed_item)
         try:
             db.session.commit()
+            c += 1
         except sqlalchemy.exc.IntegrityError:
             db.session.rollback()
 
     feed.last_polled_at = datetime.datetime.utcnow()
+    logger.info('%i items has been saved from %r.', c, feed)
 
 
 def poll_feeds(rules, feed_ids):
@@ -73,7 +81,7 @@ def poll_feeds(rules, feed_ids):
             db.session.commit()
         else:
             pass  # TODO Логировать?
-    
+
     # Хотим спать _только между_ вызовами `poll_feed` (т.е., не хотим спать
     # после последнего вызова) -- отсюда такая схема с откусыванием головы.
     feed_ids = iter(feed_ids)
@@ -82,7 +90,6 @@ def poll_feeds(rules, feed_ids):
     for feed_id in feed_ids:
         # Уважаем Crawl-delay и спим, дабы соблюсти указанную задержку
         time.sleep(rules.delay)
-        a = time.time()
         _process(feed_id)
 
 
@@ -96,8 +103,10 @@ def get_feed_ids_by_hosts():
 
 def main():
     """Обновляет содержимое фидов."""
+    logger.info('poll_feeds has started.')
+
     feed_ids_by_hosts = get_feed_ids_by_hosts()
-    
+
     host_rules = {}
     for host in feed_ids_by_hosts.keys():
         host_rules[host] = get_robots_rules(host, 'rsstank/0.1')
@@ -107,9 +116,15 @@ def main():
         for host, feed_ids in feed_ids_by_hosts.iteritems():
             future = executor.submit(poll_feeds, host_rules[host], feed_ids)
             future_to_host[future] = host
+            logger.info('%i feeds for host %s has been enqueued for polling.',
+                        len(host_rules), host)
 
         for future in concurrent.futures.as_completed(future_to_host):
             host = future_to_host[future]
             if future.exception() is not None:
-                exc = future.exception()
-                print host, exc
+                logger.warn('An error has occured during polling %s feeds: "%s".',
+                            host, future.exception())
+            else:
+                logger.info('All feeds from %s has been successfully polled.', host)
+
+    logger.info('poll_feeds has finished.')

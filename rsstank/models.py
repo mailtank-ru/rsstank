@@ -8,7 +8,7 @@ class AccessKey(db.Model):
     """Ключ доступа к API Mailtank."""
 
     id = db.Column(db.Integer, primary_key=True)
-    
+
     #: Содержимое ключа доступа
     content = db.Column(db.String(255), nullable=False, unique=True)
     #: Включен ли функционал rsstank для данного ключа?
@@ -38,10 +38,13 @@ class Feed(db.Model):
         'AccessKey',
         backref=db.backref('feeds', lazy='dynamic', cascade='all'))
 
+    def __repr__(self):
+        return '<Feed #{0} {1}>'.format(self.id, self.url[:60])
+
 
 class FeedItem(db.Model):
     """Элемент фида."""
-    
+
     __table_args__ = (
         # `guid` может быть очень большим, в то время как MySQL
         # ограничивает длину проиндексированного поля 767 байтами.
@@ -57,7 +60,7 @@ class FeedItem(db.Model):
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False,
                            default=datetime.datetime.utcnow)
-    
+
     feed = db.relationship(
         'Feed', backref=db.backref('items', lazy='dynamic', cascade='all'))
 
