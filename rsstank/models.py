@@ -1,8 +1,11 @@
 # coding: utf-8
 import datetime
 
-from . import db, app
+import pytz
+import dateutil
+
 from mailtank import Mailtank
+from . import db, app
 
 
 class AccessKey(db.Model):
@@ -29,6 +32,7 @@ class Feed(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     access_key_id = db.Column(db.Integer, db.ForeignKey('access_key.id'),
                               nullable=False)
+
     #: URL RSS-фида
     url = db.Column(db.String(2000), nullable=False)
     #: Интервал в секундах, с которым генерируются рассылки
@@ -43,9 +47,23 @@ class Feed(db.Model):
         'AccessKey',
         backref=db.backref('feeds', lazy='dynamic', cascade='all'))
 
+    def __repr__(self):
+        return '<Feed #{0} {1}>'.format(self.id, self.url[:60])
+
 
 class FeedItem(db.Model):
     """Элемент фида."""
+
+    __table_args__ = (
+        # `guid` может быть очень большим, в то время как MySQL
+        # ограничивает длину проиндексированного поля 767 байтами.
+        # Указывая `mysql_length`, мы говорим MySQL строить
+        # индекс не по всему полю, а только по первым его 255 символам.
+        # 255 умножить на три (MySQL использует только три байта
+        # для хранения UTF-8 символов) меньше 767.
+        db.Index('unique_guid_within_a_feed', 'feed_id', 'guid',
+                 unique=True, mysql_length={'guid': 255}),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'), nullable=False)
@@ -73,7 +91,7 @@ class FeedItem(db.Model):
     comments = db.Column(db.String(2000))
 
     # Optional. Defines a unique identifier for the item
-    guid = db.Column(db.String(1000))
+    guid = db.Column(db.String(2000))
     # Optional. Defines the last-publication date for the item
     pub_date = db.Column(db.DateTime)
 
@@ -85,3 +103,35 @@ class FeedItem(db.Model):
     # Optional. Specifies a third-party source for the item
     source_url = db.Column(db.String(2000))
     source_content = db.Column(db.String(2000))
+
+    @staticmethod
+    def from_feedparser_entry(entry):
+        """Конструирует :class:`FeedItem` из :class:`feedparser.FeedParserDict`."""
+        pub_date = entry.get('published')
+        if pub_date:
+            pub_date = dateutil.parser.parse(pub_date)
+            if pub_date.tzinfo is not None:
+                pub_date = pub_date.astimezone(pytz.utc).replace(tzinfo=None)
+
+        feed_item = FeedItem(
+            title=entry['title'],
+            link=entry['link'],
+            pub_date=pub_date,
+            guid=entry.get('guid'),
+            description=entry['description'],
+            author=entry.get('author'),
+            comments=entry.get('comments'))
+        enclosures = entry.get('enclosures')
+        if enclosures:
+            enclosure = enclosures[0]
+            feed_item.enclosure_url = enclosure.get('href')
+            feed_item.enclosure_length = enclosure.get('length')
+            feed_item.enclosure_type = enclosure.get('type')
+        source = entry.get('source')
+        if source:
+            feed_item.source_url = source.get('href')
+            feed_item.source_content = source.get('title')
+        tags = entry.get('tags')
+        if tags:
+            feed_item.category = tags[0].get('label')
+        return feed_item
