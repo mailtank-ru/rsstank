@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from 'utils.html' import render_field %}
+
+{% block content %}
+<h1>RSSTank</h1>
+
+<form method="POST">
+    {{ form.csrf_token }}
+    <h2>Вход в систему</h2>
+    {{ render_field(form.mailtank_key) }}
+    <input type="submit" value="Войти">
+</form>
+    
+{% endblock %}

@@ -4,7 +4,8 @@ import datetime
 import pytz
 import dateutil
 
-from . import db
+from mailtank import Mailtank
+from . import db, app
 
 
 class AccessKey(db.Model):
@@ -20,6 +21,10 @@ class AccessKey(db.Model):
     #: тегов, с которыми работает rsstank)
     namespace = db.Column(db.String(255), nullable=False)
 
+    @property
+    def mailtank(self):
+        return Mailtank(app.config['MAILTANK_API_URL'], self.content)
+
 
 class Feed(db.Model):
     """Фид."""
@@ -27,6 +32,7 @@ class Feed(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     access_key_id = db.Column(db.Integer, db.ForeignKey('access_key.id'),
                               nullable=False)
+
     #: URL RSS-фида
     url = db.Column(db.String(2000), nullable=False)
     #: Интервал в секундах, с которым генерируются рассылки

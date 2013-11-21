@@ -1,3 +1,5 @@
+from flask.ext.webtest import TestApp
+
 import rsstank
 
 
@@ -5,10 +7,10 @@ class SQLAlchemyMixin(object):
     @property
     def db(self):
         return self.app.extensions['sqlalchemy'].db
-    
+
     def create_database(self):
         self.db.create_all()
-    
+
     def drop_database(self):
         self.db.drop_all()
 
@@ -45,7 +47,9 @@ class TestCase(SQLAlchemyMixin, SQLAlchemyFixtureMixin):
         self.drop_database()
         self.create_database()
         self.load_fixtures()
-    
+        self.client = TestApp(self.app, db=self.db, use_session_scopes=True,
+                              extra_environ={'HTTP_HOST': 'rsstank.local'})
+
     def teardown_method(self, method):
         self.db.session.remove()
         self.ctx.pop()
