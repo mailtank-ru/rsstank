@@ -59,7 +59,7 @@ class TestAdmin(TestCase):
         assert (a.content, a.is_enabled, a.namespace) == ('asdf', False, '')
         
     @httpretty.httprettified
-    def test_auth(self):
+    def test_edit(self):
         """Клиент может изменять свойства ключа"""
         httpretty.register_uri(
             httpretty.GET, '{}/tags'.format(self.app.config['MAILTANK_API_URL']),

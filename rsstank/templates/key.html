@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% from 'utils.html' import render_field %}
 
 {% block content %}
 <h1>Ключ {{ key.content }}</h1>
 
 <form method="POST">
     {{ form.csrf_token }}
-    <div>{{ form.is_enabled.label.text }} {{ form.is_enabled|safe }}</div>
-    <div>{{ form.namespace.label.text }} {{ form.namespace|safe}}</div>
+    {{ render_field(form.is_enabled) }}
+    {{ render_field(form.namespace) }}
     <input type="submit" value="Сохранить">
 </form>
 
