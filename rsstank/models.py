@@ -67,7 +67,7 @@ class FeedItem(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False,
+    created_at = db.Column(db.DateTime, nullable=False, index=True,
                            default=datetime.datetime.utcnow)
 
     feed = db.relationship(
@@ -116,9 +116,9 @@ class FeedItem(db.Model):
         feed_item = FeedItem(
             title=entry['title'],
             link=entry['link'],
+            description=entry['description'],
             pub_date=pub_date,
             guid=entry.get('guid'),
-            description=entry['description'],
             author=entry.get('author'),
             comments=entry.get('comments'))
         enclosures = entry.get('enclosures')
@@ -135,3 +135,32 @@ class FeedItem(db.Model):
         if tags:
             feed_item.category = tags[0].get('label')
         return feed_item
+
+    def to_context_entry(self):
+        entry = {
+            'title': self.title,
+            'link': self.link,
+            'description': self.description,
+            'pub_date': self.pub_date and self.pub_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'guid': self.guid,
+            'author': self.author,
+            'comments': self.comments,
+            'category': self.category,
+        }
+
+        enclosure = {
+            'url': self.enclosure_url,
+            'length': self.enclosure_length,
+            'type': self.enclosure_type,
+        }
+        if any(enclosure.itervalues()):
+            entry['enclosure'] = enclosure
+
+        source = {
+            'url': self.source_url,
+            'content': self.source_content,
+        }
+        if any(source.values()):
+            entry['source'] = source
+
+        return entry
