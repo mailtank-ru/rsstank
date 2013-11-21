@@ -29,7 +29,7 @@ Crawl-delay: 1
 
 class TestPollFeeds(TestCase):
     """Тесты внутренностей ./manage.py poll_feeds."""
-    
+
     def setup_method(self, method):
         TestCase.setup_method(self, method)
         self.access_key = AccessKey(content='123', is_enabled=True, namespace='test')
@@ -44,7 +44,7 @@ class TestPollFeeds(TestCase):
         rules = poll_feeds.get_robots_rules('66.ru', 'Chrome')
         assert rules.delay == 2
         assert rules.allowed('/hello/')
-        
+
         httpretty.reset()
         httpretty.register_uri(
             httpretty.GET, 'http://66.ru/robots.txt', body=ROBOTS_TXT_2)
@@ -68,14 +68,26 @@ class TestPollFeeds(TestCase):
                         sending_interval=60 * 60 * 24,
                         url=feed_url)
             db.session.add(feed)
+
+        # Добавим выключенный ключ
+        disabled_access_key = AccessKey(content='456', is_enabled=False, namespace='test')
+        db.session.add(disabled_access_key)
+        # И несколько фидов в него, которые мы не хотим видеть
+        # в результате работы `get_feed_ids_by_hosts`
+        for feed_url in ('http://66.ru/news/politic/rss/',
+                         'http://lenta.ru/rss/articles/russia'):
+            feed = Feed(access_key=disabled_access_key,
+                        sending_interval=60 * 60 * 24,
+                        url=feed_url)
+            db.session.add(feed)
         db.session.commit()
 
         feed_ids_by_hosts = poll_feeds.get_feed_ids_by_hosts()
 
         def get_feeds(host):
-            return [id for (id,) in Feed.query.filter(
+            return [feed.id for feed in Feed.query.filter(
                 Feed.url.contains('http://{}'.format(host))
-            ).with_entities(Feed.id)]
+            ) if feed.access_key.is_enabled]
         assert set(feed_ids_by_hosts['66.ru']) == \
             set(get_feeds('66.ru'))
         assert set(feed_ids_by_hosts['news.yandex.ru']) == \
@@ -97,7 +109,7 @@ class TestPollFeeds(TestCase):
         with open('./tests/fixtures/news.yandex.ru-hardware-rss') as fh:
             httpretty.register_uri(
                 httpretty.GET, 'http://news.yandex.ru/hardware.rss', body=fh.read())
-        
+
         for feed in self.access_key.feeds:
             poll_feeds.poll_feed(feed)
 
@@ -105,7 +117,7 @@ class TestPollFeeds(TestCase):
         assert feed_66_ru.items.count() == 10
         item = feed_66_ru.items.filter_by(guid='66.ru:news:147137').first()
         assert item.description == u'Президент РЖД хочет заменить их двухэтажными.'
-        
+
         feed_yandex_ru = self.access_key.feeds.filter(Feed.url.contains('yandex.ru')).first()
         assert feed_yandex_ru.items.count() == 15
 
@@ -116,17 +128,17 @@ class TestPollFeeds(TestCase):
                     url='http://news.yandex.ru/hardware.rss')
         db.session.add(feed)
         db.session.commit()
-        
+
         # news.yandex.ru-world-rss-1 содержит элементы A B C D E
         with open('./tests/fixtures/news.yandex.ru-world-rss-1') as fh:
             rss_data = fh.read()
             guids_before_update = \
                 set(entry['guid'] for entry in feedparser.parse(rss_data).entries)
             httpretty.register_uri(httpretty.GET, feed.url, body=rss_data)
-        
+
         poll_feeds.poll_feed(feed)
         assert feed.items.count() == 5
-        
+
         httpretty.reset()
         # news.yandex.ru-world-rss-2 содержит элементы D E F G H
         with open('./tests/fixtures/news.yandex.ru-world-rss-2') as fh:
@@ -163,6 +175,7 @@ class TestPollFeeds(TestCase):
         db.session.commit()
 
         call_datetimes_by_hosts = collections.defaultdict(list)
+
         def side_effect(feed):
             host = furl(feed.url).host
             call_datetimes_by_hosts[host].append(dt.datetime.utcnow())
@@ -170,7 +183,7 @@ class TestPollFeeds(TestCase):
         with mock.patch('rsstank.poll_feeds.poll_feed',
                         side_effect=side_effect) as poll_feed_mock:
             poll_feeds.main()
-        
+
         def assert_deltas_equal(sequence, x, precision):
             deltas = [next_el - el for el, next_el in zip(sequence, sequence[1:])]
             assert all(x < delta < x + precision for delta in deltas)
@@ -181,7 +194,7 @@ class TestPollFeeds(TestCase):
             call_datetimes,
             dt.timedelta(seconds=1),
             dt.timedelta(milliseconds=15))
-        
+
         call_datetimes = call_datetimes_by_hosts['news.yandex.ru']
         assert len(call_datetimes) == 2
         assert_deltas_equal(

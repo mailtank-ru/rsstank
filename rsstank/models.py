@@ -1,6 +1,9 @@
 # coding: utf-8
 import datetime
 
+import pytz
+import dateutil
+
 from . import db
 
 
@@ -98,14 +101,20 @@ class FeedItem(db.Model):
     @staticmethod
     def from_feedparser_entry(entry):
         """Конструирует :class:`FeedItem` из :class:`feedparser.FeedParserDict`."""
+        pub_date = entry.get('published')
+        if pub_date:
+            pub_date = dateutil.parser.parse(pub_date)
+            if pub_date.tzinfo is not None:
+                pub_date = pub_date.astimezone(pytz.utc).replace(tzinfo=None)
+
         feed_item = FeedItem(
             title=entry['title'],
             link=entry['link'],
+            pub_date=pub_date,
+            guid=entry.get('guid'),
             description=entry['description'],
-            pub_date=entry.get('published_parsed'),
             author=entry.get('author'),
-            comments=entry.get('comments'),
-            guid=entry.get('guid'))
+            comments=entry.get('comments'))
         enclosures = entry.get('enclosures')
         if enclosures:
             enclosure = enclosures[0]

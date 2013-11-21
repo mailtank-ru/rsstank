@@ -11,7 +11,8 @@ import reppy.parser
 import sqlalchemy
 from furl import furl
 
-from .models import db, Feed, FeedItem
+from . import app
+from .models import db, AccessKey, Feed, FeedItem
 
 
 logger = logging.getLogger(__name__)
@@ -44,12 +45,16 @@ def get_robots_rules(host, agent):
 
 
 def poll_feed(feed):
-    """Сохраняет элементы фида в БД."""
+    """Сохраняет элементы фида в БД.
+
+    :type feed: :class:`rsstank.models.Feed`
+    """
     logger.info('Polling %r.', feed)
+
     response = requests.get(feed.url)
     feed_data = feedparser.parse(response.content)
 
-    c = 0
+    items_saved_n = 0
     for entry in feed_data.entries:
         feed_item = FeedItem.from_feedparser_entry(entry)
         feed_item.feed_id = feed.id
@@ -58,20 +63,24 @@ def poll_feed(feed):
         db.session.add(feed_item)
         try:
             db.session.commit()
-            c += 1
         except sqlalchemy.exc.IntegrityError:
+            # IntegrityError может быть вызван тем, что в базе уже существует
+            # FeedItem с таким же `feed_id` и `guid`. Это абсолютно нормально;
+            # мы должны лишь откатить вложенную транзакцию.
             db.session.rollback()
+        else:
+            items_saved_n += 1
 
     feed.last_polled_at = datetime.datetime.utcnow()
-    logger.info('%i items has been saved from %r.', c, feed)
+    logger.info('%i items have been saved from %r.', items_saved_n, feed)
 
 
 def poll_feeds(rules, feed_ids):
-    """Сохраняет элементы фидов в БД.
+    """Сохраняет элементы фидов с идентификаторами `feed_ids` в БД.
 
     :param feed_ids: список идентификаторов фидов. URL-ы этих фидов должны
-                     иметь один и тот же хост, правила доступа к которому
-                     задаются аргументом `rules`
+                     указывать на один и тот же хост, правила доступа к
+                     которому задаются аргументом `rules`
     :type rules: :class:`reppy.parser.Agent`
     """
     def _process(feed_id):
@@ -80,7 +89,7 @@ def poll_feeds(rules, feed_ids):
             poll_feed(feed)
             db.session.commit()
         else:
-            pass  # TODO Логировать?
+            logger.warn('Accessing %r is forbidden by host\'s robots.txt.', feed)
 
     # Хотим спать _только между_ вызовами `poll_feed` (т.е., не хотим спать
     # после последнего вызова) -- отсюда такая схема с откусыванием головы.
@@ -94,26 +103,40 @@ def poll_feeds(rules, feed_ids):
 
 
 def get_feed_ids_by_hosts():
+    """Возвращает словарь, ключами которого являются имена хостов,
+    а значениями -- списки идентификаторов фидов, чьи URL указызывают
+    на этот хост.
+
+    Перечисляются только фиды, относящиеся ко включенным ключам (`is_enabled`).
+
+    :rtype: {str: [int]}
+    """
     rv = collections.defaultdict(list)
-    for feed in Feed.query.all():
+    for feed in Feed.query.join(AccessKey).filter(AccessKey.is_enabled == True):
         host = furl(feed.url).host
         rv[host].append(feed.id)
     return rv
 
 
 def main():
-    """Обновляет содержимое фидов."""
+    """Обновляет содержимое всех фидов, относящихся ко включенным ключам."""
     logger.info('poll_feeds has started.')
 
+    # Группируем идентификаторы фидов по хостам
     feed_ids_by_hosts = get_feed_ids_by_hosts()
 
+    # Опрашиваем robots.txt всех хостов
     host_rules = {}
     for host in feed_ids_by_hosts.keys():
-        host_rules[host] = get_robots_rules(host, 'rsstank/0.1')
+        host_rules[host] = get_robots_rules(host, app.config['RSSTANK_AGENT'])
 
+    # Заводим пул из 20 потоков
     with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
         future_to_host = {}
         for host, feed_ids in feed_ids_by_hosts.iteritems():
+            # Делегируем таск "обнови все фиды хоста" пулу потоков.
+            # 1. `poll_feeds` обновляет фиды последовательно, уважая robots.txt
+            # 2. Ни для какого хоста `poll_feeds` не будет позван дважды.
             future = executor.submit(poll_feeds, host_rules[host], feed_ids)
             future_to_host[future] = host
             logger.info('%i feeds for host %s has been enqueued for polling.',
@@ -125,6 +148,6 @@ def main():
                 logger.warn('An error has occured during polling %s feeds: "%s".',
                             host, future.exception())
             else:
-                logger.info('All feeds from %s has been successfully polled.', host)
+                logger.info('All feeds from %s have been successfully polled.', host)
 
     logger.info('poll_feeds has finished.')

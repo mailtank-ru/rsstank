@@ -6,6 +6,7 @@ class DefaultConfig(object):
     SENTRY_DSN = None
     SQLALCHEMY_DATABASE_URI = None
     RSSTANK_LOGLEVEL = 'INFO'
+    RSSTANK_AGENT = 'rsstank/0.1'
 
 
 class DevelopmentConfig(DefaultConfig):
