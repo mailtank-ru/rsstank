@@ -3,8 +3,10 @@ class DefaultConfig(object):
     DEBUG = False
     TESTING = False
 
-    RSSTANK_SENTRY_DSN = None
+    SENTRY_DSN = None
     SQLALCHEMY_DATABASE_URI = None
+    RSSTANK_LOGLEVEL = 'INFO'
+    RSSTANK_AGENT = 'rsstank/0.1'
 
 
 class DevelopmentConfig(DefaultConfig):
@@ -17,3 +19,4 @@ class TestingConfig(DefaultConfig):
     TESTING = True
     SECRET_KEY = 'testing'
     SQLALCHEMY_DATABASE_URI = 'mysql://root:@localhost/rsstank_test'
+    RSSTANK_LOGLEVEL = 'WARNING'
