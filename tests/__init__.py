@@ -1,5 +1,6 @@
-import rsstank
 from flask.ext.webtest import TestApp
+
+import rsstank
 
 
 class SQLAlchemyMixin(object):

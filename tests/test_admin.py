@@ -65,6 +65,10 @@ class TestAdmin(TestCase):
             httpretty.GET, '{}/tags'.format(self.app.config['MAILTANK_API_URL']),
             body=json.dumps(TAGS_DATA), status=200, content_type='text/json')
 
+        a = AccessKey(content='asdf', namespace='')
+        db.session.add(a)
+        db.session.commit()
+
         # Входим в систему по ключу
         r = self.client.get(self.index_url)
         r.form['mailtank_key'] = 'asdf'

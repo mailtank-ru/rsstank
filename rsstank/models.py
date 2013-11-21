@@ -18,6 +18,7 @@ class AccessKey(db.Model):
     #: тегов, с которыми работает rsstank)
     namespace = db.Column(db.String(255), nullable=False)
 
+    @property
     def mailtank(self):
         return Mailtank(app.config['MAILTANK_API_URL'], self.content)
 

@@ -2,8 +2,8 @@
 from flask import request, render_template, session, redirect, url_for
 
 from . import app, db
-from forms import AuthForm, KeyForm
-from models import AccessKey
+from .forms import AuthForm, KeyForm
+from .models import AccessKey
 from mailtank import MailtankError
 
 
@@ -16,9 +16,8 @@ def index():
         key = AccessKey.query.filter_by(content=form.mailtank_key.data).first() \
             or AccessKey(content=form.mailtank_key.data, namespace='')
 
-        mailtank = key.mailtank()
         try:
-            mailtank.get_tags()
+            key.mailtank.get_tags()
         except MailtankError as e:
             form.mailtank_key.errors.append(u'Невозможно войти по такому ключу Mailtank')
         else:
@@ -33,7 +32,8 @@ def index():
 @app.route('/key/', methods=['GET', 'POST'])
 def key():
     """Вьюшка, позволяющая менять настройки ключа от Mailtank в системе.
-    Ожидает в POST параметрах 'key'"""
+    Ожидает в POST параметрах 'key'
+    """
     key = AccessKey.query.filter_by(content=session['key']).first()
     form = KeyForm(request.form, obj=key)
 

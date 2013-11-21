@@ -6,7 +6,7 @@
 
 <form method="POST">
     {{ form.csrf_token }}
-    <p>Вход в систему</p>
+    <h2>Вход в систему</h2>
     {{ render_field(form.mailtank_key) }}
     <input type="submit" value="Войти">
 </form>

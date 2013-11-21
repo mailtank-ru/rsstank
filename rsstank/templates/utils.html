@@ -1,13 +1,14 @@
 {% macro render_field(field) %}
     <div>
-        <label for="{{ field.id }}">{{ field.label.text }}</label>{{ field|safe }}
+        <label for="{{ field.id }}">{{ field.label.text }}</label>
+        {{ field|safe }}
         <div>
-                {% if field.description %}
-                    <span>{{ field.description }}</span>
-                {% endif %}
-                {% for error in field.errors %}
-                    <span>{{ error }}</span>
-                {% endfor %}
+            {% if field.description %}
+                <span>{{ field.description }}</span>
+            {% endif %}
+            {% for error in field.errors %}
+                <span>{{ error }}</span>
+            {% endfor %}
         </div>
     </div>
 {% endmacro %}
