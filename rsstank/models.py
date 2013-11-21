@@ -2,13 +2,14 @@
 import datetime
 
 from . import db
+from mailtank import Mailtank
 
 
 class AccessKey(db.Model):
     """Ключ доступа к API Mailtank."""
 
     id = db.Column(db.Integer, primary_key=True)
-    
+
     #: Содержимое ключа доступа
     content = db.Column(db.String(255), nullable=False, unique=True)
     #: Включен ли функционал rsstank для данного ключа?
@@ -16,6 +17,9 @@ class AccessKey(db.Model):
     #: Пространство имён ключа (используется для ограничения множества
     #: тегов, с которыми работает rsstank)
     namespace = db.Column(db.String(255), nullable=False)
+
+    def mailtank(self):
+        return Mailtank('api_url', self.content)
 
 
 class Feed(db.Model):
@@ -46,7 +50,7 @@ class FeedItem(db.Model):
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False,
                            default=datetime.datetime.utcnow)
-    
+
     feed = db.relationship(
         'Feed', backref=db.backref('items', lazy='dynamic', cascade='all'))
 

@@ -17,3 +17,5 @@ class TestingConfig(DefaultConfig):
     TESTING = True
     SECRET_KEY = 'testing'
     SQLALCHEMY_DATABASE_URI = 'mysql://root:@localhost/rsstank_test'
+    SERVER_NAME = 'rsstank.local'
+    MAILTANK_API_URL = 'api.mailtank.local'

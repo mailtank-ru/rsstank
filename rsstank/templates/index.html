@@ -1,1 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h1>RSSTank</h1>
+
+<form method="POST">
+    {{ form.csrf_token }}
+    {{ form.mailtank_key|safe }}
+    {{ form.mailtank_key.errors }}
+    <input type="submit" value="Войти">
+</form>
+    
+{% endblock %}

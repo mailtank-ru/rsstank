@@ -1,1 +1,13 @@
-<h1>Ключ</h1>
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Ключ {{ key.content }}</h1>
+
+<form method="POST">
+    {{ form.csrf_token }}
+    {{ form.is_enabled|safe }}
+    {{ form.namedpace|safe}}
+    <input type="submit" value="Сохранить">
+</form>
+
+{% endblock %}
