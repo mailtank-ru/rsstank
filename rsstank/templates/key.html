@@ -5,8 +5,8 @@
 
 <form method="POST">
     {{ form.csrf_token }}
-    {{ form.is_enabled|safe }}
-    {{ form.namedpace|safe}}
+    <div>{{ form.is_enabled.label.text }} {{ form.is_enabled|safe }}</div>
+    <div>{{ form.namespace.label.text }} {{ form.namespace|safe}}</div>
     <input type="submit" value="Сохранить">
 </form>
 

@@ -5,8 +5,15 @@
 
 <form method="POST">
     {{ form.csrf_token }}
-    {{ form.mailtank_key|safe }}
-    {{ form.mailtank_key.errors }}
+    <p>Чтобы войти в систему, введите ключ от Mailtank</p>
+    <div>
+        {{ form.mailtank_key|safe }}
+        <div class="errors">
+        {% for error in form.mailtank_key.errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+        </div>
+    </div>
     <input type="submit" value="Войти">
 </form>
     

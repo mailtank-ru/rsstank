@@ -13,32 +13,28 @@ def index():
     form = AuthForm(request.form)
 
     if form.validate_on_submit():
-        key = AccessKey.query.filter_by(content=form.mailtank_key.data).first()
-        if not key:
-            key = AccessKey(content=form.mailtank_key.data)
+        key = AccessKey.query.filter_by(content=form.mailtank_key.data).first() \
+            or AccessKey(content=form.mailtank_key.data, namespace='')
 
         mailtank = key.mailtank()
-
         try:
             mailtank.get_tags()
         except MailtankError as e:
-            print e
-            form.mailtank_key.errors.append(u'Такой ключ не зарегестрирован в Mailtank')
+            form.mailtank_key.errors.append(u'Невозможно войти по такому ключу Mailtank')
         else:
             session['key'] = key.content
-            return redirect(url_for('.key'))
+            db.session.add(key)
+            db.session.commit()
+            return redirect(url_for('key'))
 
     return render_template('index.html', form=form)
 
 
-@app.route('/key/', methods=['POST'])
+@app.route('/key/', methods=['GET', 'POST'])
 def key():
     """Вьюшка, позволяющая менять настройки ключа от Mailtank в системе.
     Ожидает в POST параметрах 'key'"""
     key = AccessKey.query.filter_by(content=session['key']).first()
-    if not key:
-        key = AccessKey(content=session['key'])
-
     form = KeyForm(request.form, obj=key)
 
     if form.validate_on_submit():
@@ -46,4 +42,4 @@ def key():
         db.session.add(key)
         db.session.commit()
 
-    return render_template('key.html', form=form)
+    return render_template('key.html', key=key, form=form)

@@ -1,7 +1,7 @@
 # coding: utf-8
 import datetime
 
-from . import db
+from . import db, app
 from mailtank import Mailtank
 
 
@@ -19,7 +19,7 @@ class AccessKey(db.Model):
     namespace = db.Column(db.String(255), nullable=False)
 
     def mailtank(self):
-        return Mailtank('api_url', self.content)
+        return Mailtank(app.config['MAILTANK_API_URL'], self.content)
 
 
 class Feed(db.Model):
