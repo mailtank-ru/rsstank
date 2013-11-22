@@ -97,6 +97,10 @@ class Mailtank(object):
             current_page += 1
 
         return rv
+    
+    def create_mailing(self):
+        # TODO
+        pass
 
 
 class Tag(object):
