@@ -11,6 +11,7 @@ from rsstank.update_feeds import sync
 from rsstank.models import AccessKey, Feed
 from mailtank import Tag
 
+
 TAGS_DATA = {
     'objects': [
         {'name': 'rss:a:http://go.rss/feed:100'},
@@ -22,6 +23,7 @@ TAGS_DATA = {
     'pages_total': 1,
 }
 
+
 class TestUpdateFeeds(TestCase):
     """Тесты внутренностей ./manage update_feeds"""
 
@@ -29,7 +31,7 @@ class TestUpdateFeeds(TestCase):
         TestCase.setup_method(self, method)
 
     def test_sync(self):
-        # Проверям добавление тэга
+        # Проверям добавление тега
         tags = [Tag({'name': 'rss:a:http://go-go-go.rss/feed:100'})]
         key = AccessKey(content='asdf', namespace='a')
 
@@ -38,28 +40,28 @@ class TestUpdateFeeds(TestCase):
         feed = Feed.query.first()
         assert feed.url == 'http://go-go-go.rss/feed'
 
-        # Проверяем тэги с разными интервалами
+        # Проверяем теги с разными интервалами
         tags = [Tag({'name': 'rss:a:http://go-go-go.rss/feed:100'}),
                 Tag({'name': 'rss:a:http://go-go-go.rss/feed:200'})]
 
         sync(tags, key)
         assert 2 == Feed.query.count()
 
-        # Проверяем удаление тэга
+        # Проверяем удаление тега
         tags = [Tag({'name': 'rss:a:http://go-go-go.rss/feed:200'})]
 
         sync(tags, key)
         feed = Feed.query.first()
         assert feed.sending_interval == 200
 
-        # Проверяем тэги с разными адресами
+        # Проверяем теги с разными адресами
         tags = [Tag({'name': 'rss:a:http://no-no-no.rss/feed:200'}),
                 Tag({'name': 'rss:a:http://go-go-go.rss/feed:200'})]
         sync(tags, key)
         assert 2 == Feed.query.count()
         assert Feed.query.filter_by(url='http://no-no-no.rss/feed').first()
 
-        # Проверяем обработку плохого тэга
+        # Проверяем обработку плохого тега
         tags = [Tag({'name': 'rss:a:http://go-go-go.rss/feed:asdf'})]
         sync(tags, key)
         assert not Feed.query.first()
@@ -86,13 +88,7 @@ class TestUpdateFeeds(TestCase):
         db.session.add_all([a_key, b_key, c_key])
         db.session.commit()
 
-        def side_effect(tags, key):
-            # Проверяем, что sync была вызвана с нужными тэгами
-            call_tags = set([tag.name for tag in tags])
-            assert_tags = set([tag['name'] for tag in TAGS_DATA['objects']])
-            assert call_tags == assert_tags
-
-        with mock.patch('rsstank.update_feeds.sync', side_effect=side_effect) as sync:
+        with mock.patch('rsstank.update_feeds.sync') as sync:
             update_feeds.main()
 
             db.session.refresh(a_key)
@@ -101,6 +97,11 @@ class TestUpdateFeeds(TestCase):
             # Синхронизация проведена только для хорошего ключа
             sync.assert_called_once_with(mock.ANY, a_key)
 
+            args, kwargs = sync.call_args
+            tags, key = args
+            call_tags = set([tag.name for tag in tags])
+            assert_tags = set([tag['name'] for tag in TAGS_DATA['objects']])
+            assert call_tags == assert_tags
+
             # Ключ, на запрос с которым Mailtank ответил 403, выключился
-            assert b_key.is_enabled is False
-            
+            assert not b_key.is_enabled
