@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def sync(tags, key):
-    """Синхронизирует фиды ключа `key` Rsstank в соответствии с тэгами `tags` Mailtank"""
+    """Синхронизирует фиды ключа `key` rsstank в соответствии с тэгами `tags` Mailtank"""
     feeds = key.feeds.all()
     # Строим словарь из фидов с ключом 'интервал:адрес'
     feeds_by_url = \
