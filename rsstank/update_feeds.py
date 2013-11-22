@@ -30,7 +30,7 @@ def sync(tags, key):
                 feeds.remove(feed)
             else:
                 db.session.add(
-                    Feed(access_key=key, sending_interval=interval, url=url))
+                    Feed(access_key=key, sending_interval=interval, url=url, tag=tag))
             logger.info(u'Tag {} synced'.format(tag.name))
 
     for feed in feeds:
