@@ -27,6 +27,13 @@ Crawl-delay: 1
 """
 
 
+def create_feed(feed_url):
+    """Конструирует валидный :class:`Feed`."""
+    feed = Feed(sending_interval=60 * 60 * 24, url=feed_url)
+    feed.tag = 'rss:test:{}:{}'.format(feed.url, feed.access_key)
+    return feed
+
+
 class TestPollFeeds(TestCase):
     """Тесты внутренностей ./manage.py poll_feeds."""
 
@@ -64,9 +71,8 @@ class TestPollFeeds(TestCase):
                          'http://66.ru/news/freetime/rss/',
                          'http://news.yandex.ru/hardware.rss',
                          'http://news.yandex.ru/fire.rss'):
-            feed = Feed(access_key=self.access_key,
-                        sending_interval=60 * 60 * 24,
-                        url=feed_url)
+            feed = create_feed(feed_url)
+            feed.access_key = self.access_key
             db.session.add(feed)
 
         # Добавим выключенный ключ
@@ -76,9 +82,8 @@ class TestPollFeeds(TestCase):
         # в результате работы `get_feed_ids_by_hosts`
         for feed_url in ('http://66.ru/news/politic/rss/',
                          'http://lenta.ru/rss/articles/russia'):
-            feed = Feed(access_key=disabled_access_key,
-                        sending_interval=60 * 60 * 24,
-                        url=feed_url)
+            feed = create_feed(feed_url)
+            feed.access_key = disabled_access_key
             db.session.add(feed)
         db.session.commit()
 
@@ -97,9 +102,8 @@ class TestPollFeeds(TestCase):
     def test_poll_feed_basics(self):
         for feed_url in ('http://66.ru/news/society/rss/',
                          'http://news.yandex.ru/hardware.rss'):
-            feed = Feed(access_key=self.access_key,
-                        sending_interval=60 * 60 * 24,
-                        url=feed_url)
+            feed = create_feed(feed_url)
+            feed.access_key = self.access_key
             db.session.add(feed)
         db.session.commit()
 
@@ -123,9 +127,8 @@ class TestPollFeeds(TestCase):
 
     @httpretty.httprettified
     def test_poll_feed_ignores_already_seen_items(self):
-        feed = Feed(access_key=self.access_key,
-                    sending_interval=60 * 60 * 24,
-                    url='http://news.yandex.ru/hardware.rss')
+        feed = create_feed('http://news.yandex.ru/hardware.rss')
+        feed.access_key = self.access_key
         db.session.add(feed)
         db.session.commit()
 
@@ -168,9 +171,8 @@ class TestPollFeeds(TestCase):
                          'http://66.ru/news/freetime/rss/',
                          'http://news.yandex.ru/hardware.rss',
                          'http://news.yandex.ru/fire.rss'):
-            feed = Feed(access_key=self.access_key,
-                        sending_interval=60 * 60 * 24,
-                        url=feed_url)
+            feed = create_feed(feed_url)
+            feed.access_key = self.access_key
             db.session.add(feed)
         db.session.commit()
 
