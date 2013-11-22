@@ -98,7 +98,19 @@ class Mailtank(object):
 
         return rv
 
+    def create_mailing(self, layout_id, context, target, attachments=[]):
+        """Создает и выполняет рассылку Mailtank. Возвращает Mailing"""
+        pass
+
 
 class Tag(object):
     def __init__(self, data):
         self.name = data.get('name')
+
+
+class Mailing(object):
+    def __init__(self, data):
+        self.eta = data.get('eta')
+        self.id = data.get('id')
+        self.statuf = data.get('status')
+        self.url = data.get('url')
