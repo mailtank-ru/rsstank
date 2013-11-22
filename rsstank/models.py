@@ -38,6 +38,8 @@ class Feed(db.Model):
     #: Интервал в секундах, с которым генерируются рассылки
     #: с новыми элементами фида
     sending_interval = db.Column(db.Integer, nullable=False)
+    #: Тег, из которого была получена информация о фиде
+    tag = db.Column(db.String(2200), nullable=False)
     #: Дата и время последнего обновления элементов фида
     last_polled_at = db.Column(db.DateTime)
     #: Дата и время последнего создания рассылки по фиду
