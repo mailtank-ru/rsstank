@@ -22,7 +22,7 @@ def send_feed(feed):
             target={'tags': [feed.tag]},
             context=context)
     except mailtank.MailtankError:
-        # TODO
+        pass  # TODO
     else:
         feed.last_sent_at = dt.datetime.utcnow()
 

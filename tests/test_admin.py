@@ -22,7 +22,7 @@ TAGS_DATA = {
         {'name': 'tag_23464'},
     ],
     'page': 1,
-    'pages_total': 3,
+    'pages_total': 1,
 }
 
 
@@ -40,8 +40,7 @@ class TestAdmin(TestCase):
                 httpretty.Response(body='', status=403),
                 httpretty.Response(body=json.dumps(TAGS_DATA),
                                    status=200,
-                                   content_type='text/json'),
-            ])
+                                   content_type='text/json')])
 
         # Первая попытка неудачна
         r = self.client.get(self.index_url)
