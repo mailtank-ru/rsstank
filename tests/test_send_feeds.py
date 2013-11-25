@@ -13,7 +13,7 @@ from . import TestCase, fixtures
 
 
 def get_first_send_interval_as_datetimes(utc_now=None):
-    utc_start_time, utc_end_time = app.config['RSSTANK_FIRST_SEND_INTERVAL']
+    utc_start_time, utc_end_time = app.config['DEFAULT_FIRST_SEND_INTERVAL']
     if not utc_now:
         utc_now = dt.datetime.utcnow()
     utc_today = utc_now.date()
@@ -33,7 +33,8 @@ class TestSendFeeds(TestCase):
                                              namespace='test2')
         db.session.add(self.access_key)
         db.session.add(self.disabled_access_key)
-    
+        db.session.commit()
+
     def test_feed_item_to_context_entry(self):
         feed_item = fixtures.create_feed_item(seed=1)
 
@@ -67,7 +68,7 @@ class TestSendFeeds(TestCase):
 
     def test_feed_is_it_time_to_send_1(self):
         """Тестирует `Feed.is_it_time_to_send` ни разу не посланного фида."""
-        feed = fixtures.create_feed('http://example.com/example.rss')
+        feed = fixtures.create_feed('http://example.com/example.rss', self.access_key)
         assert not feed.last_sent_at
 
         utc_interval_start, utc_interval_end = get_first_send_interval_as_datetimes()
@@ -83,7 +84,7 @@ class TestSendFeeds(TestCase):
 
     def test_feed_is_it_time_to_send_2(self):
         """Тестирует `Feed.is_it_time_to_send` фида, посланного ранее."""
-        feed = fixtures.create_feed('http://example.com/example.rss')
+        feed = fixtures.create_feed('http://example.com/example.rss', self.access_key)
         feed.last_sent_at = dt.datetime.utcnow().replace(microsecond=0)
         feed.sending_interval = 60 * 60 * 24
 
@@ -97,7 +98,7 @@ class TestSendFeeds(TestCase):
             assert feed.is_it_time_to_send()
 
     def test_feed_are_there_items_to_send(self):
-        feed = fixtures.create_feed('http://example.com/example.rss')
+        feed = fixtures.create_feed('http://example.com/example.rss', self.access_key)
         feed.access_key = self.access_key
         feed.last_sent_at = dt.datetime.utcnow() - dt.timedelta(days=3)
         db.session.add(feed)
@@ -114,11 +115,11 @@ class TestSendFeeds(TestCase):
         assert not feed.are_there_items_to_send()
 
     def test_send_feed_boundary_cases(self):
-        feed = fixtures.create_feed('http://example.com/example-1.rss')
+        feed = fixtures.create_feed('http://example.com/example-1.rss', self.access_key)
         feed.access_key = self.access_key
         db.session.add(feed)
         db.session.commit()
-     
+
         # Притворяемся глупыми и зовёт send_feed с фидом, у которого нет
         # новых элементов. Ожидаем споткнуться о проверку:
         with pytest.raises(AssertionError):
@@ -152,7 +153,7 @@ class TestSendFeeds(TestCase):
 
     def test_main(self):
         # Создаём фид номер раз
-        feed_1 = fixtures.create_feed('http://example.com/example-1.rss')
+        feed_1 = fixtures.create_feed('http://example.com/example-1.rss', self.access_key)
         feed_1.sending_interval = 60 * 60 * 24
         feed_1.access_key = self.access_key
         db.session.add(feed_1)
@@ -166,11 +167,11 @@ class TestSendFeeds(TestCase):
         db.session.commit()
 
         # Создаём фид номер два
-        feed_2 = fixtures.create_feed('http://example.com/example-2.rss')
+        feed_2 = fixtures.create_feed('http://example.com/example-2.rss', self.access_key)
         feed_2.sending_interval = 60 * 60 * 24
         feed_2.access_key = self.access_key
         db.session.add(feed_2)
-        
+
         # Добавляем в него элементы датированные от "сегодня минус 3 дня" до
         # "вчера"
         for i in range(1, 3):
@@ -183,7 +184,7 @@ class TestSendFeeds(TestCase):
         # ==============
         # Заявляем, что в последний раз посылали первый фид три дня назад
         feed_1.last_sent_at = dt.datetime.utcnow() - dt.timedelta(days=4)
-        
+
         # Замораживаем время где-нибудь сегодня, но точно вне интервала,
         # допускающего посылку вида впервые
         _, utc_interval_end = get_first_send_interval_as_datetimes()
@@ -194,13 +195,13 @@ class TestSendFeeds(TestCase):
 
         # Проверяем, что create_mailing позвался однажды
         assert create_mailing_mock.call_count == 1
-        
+
         # С верным контекстом и целью
         _, kwargs = create_mailing_mock.call_args
-        
+
         context = kwargs['context']
         assert len(context['items']) == 4
-        
+
         target = kwargs['target']
         target_tags = target['tags']
         assert len(target_tags) == 1
@@ -208,7 +209,6 @@ class TestSendFeeds(TestCase):
 
         # Проверяем, что вызов команды обновил `last_sent_at` фида
         assert feed_1.last_sent_at == freezed_utc_now
-        
 
         # Случай номер 2
         # ==============
@@ -226,7 +226,7 @@ class TestSendFeeds(TestCase):
             feed_item.created_at = feed_1.last_sent_at + dt.timedelta(hours=i)
             feed_1.items.append(feed_item)
         db.session.commit()
-        
+
         # И посылаем рассылку гарантированно по истечению `sending_interval` первого
         # фида, притом так, чтобы текущее время попало в интервал, допускающий
         # посылку фидов впервые (что должно вызвать посылку второго фида)
@@ -242,13 +242,13 @@ class TestSendFeeds(TestCase):
         # Проверяем, что создались _две_ рассылки (для первого фида
         # это вторая рассылка, для второго -- первая)
         assert create_mailing_mock.call_count == 2
-        
+
         contexts_by_target_tag = {}
         for _, kwargs in create_mailing_mock.call_args_list:
             tag = kwargs['target']['tags'][0]
             context = kwargs['context']
             contexts_by_target_tag[tag] = context
-        
+
         # На _два_ различных тега
         assert set(contexts_by_target_tag.keys()) == {feed_1.tag, feed_2.tag}
         # Проверяем, что из первого фида послались элементы,
