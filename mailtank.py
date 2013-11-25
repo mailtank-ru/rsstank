@@ -98,9 +98,21 @@ class Mailtank(object):
 
         return rv
 
-    def create_mailing(self, layout_id, context, target, attachments=[]):
+    def create_mailing(self, layout_id, context, target, attachments=None):
         """Создает и выполняет рассылку Mailtank. Возвращает Mailing"""
-        pass
+        data = {
+            'context': context,
+            'layout_id': layout_id,
+            'target': target,
+        }
+        if attachments:
+            data['attachments'] = attachments
+
+        response = self._json(self._post(
+            urljoin(self._api_url, 'mailings/'),
+            data=json.dumps(data)))
+
+        return Mailing(response)
 
 
 class Tag(object):
@@ -112,5 +124,5 @@ class Mailing(object):
     def __init__(self, data):
         self.eta = data.get('eta')
         self.id = data.get('id')
-        self.statuf = data.get('status')
+        self.status = data.get('status')
         self.url = data.get('url')
