@@ -26,7 +26,7 @@ console_handler.setLevel(logging.INFO)
 logger = logging.getLogger(__package__)
 loglevel = getattr(logging, app.config.get('RSSTANK_LOGLEVEL', 'INFO'))
 logger.setLevel(loglevel)
-logger.addHandler(console_handler)
+logger.addHandler(logging.NullHandler() if app.config['TESTING'] else console_handler)
 
 
 sentry = None

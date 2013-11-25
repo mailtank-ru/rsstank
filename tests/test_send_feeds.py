@@ -1,9 +1,12 @@
 # coding: utf-8
 import datetime as dt
 
+import pytest
 import mock
 import freezegun
+import testfixtures
 
+import mailtank
 from rsstank import app, send_feeds
 from rsstank.models import db, AccessKey, Feed, FeedItem
 from . import TestCase, fixtures
@@ -30,19 +33,7 @@ class TestSendFeeds(TestCase):
                                              namespace='test2')
         db.session.add(self.access_key)
         db.session.add(self.disabled_access_key)
-
-        for feed_url in ('http://66.ru/news/society/rss/',
-                         'http://news.yandex.ru/hardware.rss'):
-            feed = fixtures.create_feed(feed_url)
-            feed.access_key = self.access_key
-            db.session.add(feed)
-
-        for feed_url in ('http://66.ru/news/politic/rss/',
-                         'http://lenta.ru/rss/articles/russia'):
-            feed = fixtures.create_feed(feed_url)
-            feed.access_key = self.disabled_access_key
-            db.session.add(feed)
-
+    
     def test_feed_item_to_context_entry(self):
         feed_item = fixtures.create_feed_item(seed=1)
 
@@ -121,6 +112,43 @@ class TestSendFeeds(TestCase):
 
         feed.last_sent_at = dt.datetime.utcnow() + dt.timedelta(days=1)
         assert not feed.are_there_items_to_send()
+
+    def test_send_feed_boundary_cases(self):
+        feed = fixtures.create_feed('http://example.com/example-1.rss')
+        feed.access_key = self.access_key
+        db.session.add(feed)
+        db.session.commit()
+     
+        # Притворяемся глупыми и зовёт send_feed с фидом, у которого нет
+        # новых элементов. Ожидаем споткнуться о проверку:
+        with pytest.raises(AssertionError):
+            send_feeds.send_feed(feed)
+
+        # Добавляем в него элементов
+        for i in range(1, 3):
+            feed_item = fixtures.create_feed_item(i)
+            feed_item.created_at = dt.datetime.utcnow() + dt.timedelta(days=i)
+            feed.items.append(feed_item)
+        db.session.commit()
+
+        class MailtankErrorStub(mailtank.MailtankError):
+            def __init__(self, code, message):
+                self.code = code
+                self.message = message
+
+        # Делаем вид, что Mailtank API вернул 503
+        mailtank_error_stub = MailtankErrorStub(503, 'Whoops')
+        with mock.patch('mailtank.Mailtank.create_mailing',
+                        side_effect=mailtank_error_stub):
+            with testfixtures.LogCapture() as l:
+                send_feeds.send_feed(feed)
+
+        # Проверяем, что происшествие отражено в логах
+        log_record = l.records[-1]
+        assert log_record.levelname == 'WARNING'
+        log_message = log_record.getMessage()
+        assert repr(mailtank_error_stub) in log_message
+        assert repr(feed) in log_message
 
     def test_main(self):
         # Создаём фид номер раз
