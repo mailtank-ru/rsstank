@@ -23,7 +23,7 @@ class MailtankError(Exception):
             self.message = self.response
 
     def __repr__(self):
-        return '<MailtankError [{0}]>'.format(self.message or self.code)
+        return '<MailtankError {0} [{1}]>'.format(self.code, self.message)
 
     def __str__(self):
         return '{0} {1}'.format(self.code, self.message)
@@ -97,6 +97,10 @@ class Mailtank(object):
             current_page += 1
 
         return rv
+
+    def create_mailing(self):
+        # TODO
+        pass
 
 
 class Tag(object):

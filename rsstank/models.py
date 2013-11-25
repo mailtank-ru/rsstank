@@ -1,5 +1,5 @@
 # coding: utf-8
-import datetime
+import datetime as dt
 
 import pytz
 import dateutil
@@ -52,6 +52,33 @@ class Feed(db.Model):
     def __repr__(self):
         return '<Feed #{0} {1}>'.format(self.id, self.url[:60])
 
+    def is_it_time_to_send(self):
+        """Возвращает True, если фид допустимо посылать в текущее время;
+        False в противном случае.
+        """
+        utc_now = dt.datetime.utcnow() 
+        if not self.last_sent_at:
+            # Рассылка ни разу не посылалась
+            utc_start_time, utc_end_time = app.config['RSSTANK_FIRST_SEND_INTERVAL']
+            # Рассказываем, попадает ли текущее время в интервал, когда допустимо
+            # впервые посылать фид
+            return utc_start_time <= utc_now.time() <= utc_end_time
+        else:
+            sending_interval = dt.timedelta(seconds=self.sending_interval)
+            return self.last_sent_at + sending_interval <= utc_now
+
+    def are_there_items_to_send(self):
+        """Возвращает True, если с момента последней посылки в фиде появились
+        новые элементы.
+        """
+        latest_created_at = self.items.with_entities(
+            db.func.max(FeedItem.created_at)
+        ).scalar()
+        if self.last_sent_at:
+            return self.last_sent_at < latest_created_at
+        else:
+            return bool(latest_created_at)
+
 
 class FeedItem(db.Model):
     """Элемент фида."""
@@ -69,14 +96,14 @@ class FeedItem(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False,
-                           default=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, index=True,
+                           default=dt.datetime.utcnow)
 
     feed = db.relationship(
         'Feed', backref=db.backref('items', lazy='dynamic', cascade='all'))
 
     # XXX TODO Нижеследующие поля отражают стандарт RSS.
-    # Вероятно, стоит сделать набор полее более общим, так, чтобы
+    # Стоит сделать набор полее более общим, так, чтобы
     # он стал подходящим для хранения элементов и Atom-фидов.
 
     # Required.  Defines the title of the item
@@ -118,9 +145,9 @@ class FeedItem(db.Model):
         feed_item = FeedItem(
             title=entry['title'],
             link=entry['link'],
+            description=entry['description'],
             pub_date=pub_date,
             guid=entry.get('guid'),
-            description=entry['description'],
             author=entry.get('author'),
             comments=entry.get('comments'))
         enclosures = entry.get('enclosures')
@@ -137,3 +164,33 @@ class FeedItem(db.Model):
         if tags:
             feed_item.category = tags[0].get('label')
         return feed_item
+
+    def to_context_entry(self):
+        """Возвращает словарь с данными элемента фида."""
+        entry = {
+            'title': self.title,
+            'link': self.link,
+            'description': self.description,
+            'pub_date': self.pub_date and self.pub_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'guid': self.guid,
+            'author': self.author,
+            'comments': self.comments,
+            'category': self.category,
+        }
+
+        enclosure = {
+            'url': self.enclosure_url,
+            'length': self.enclosure_length,
+            'type': self.enclosure_type,
+        }
+        if any(enclosure.itervalues()):
+            entry['enclosure'] = enclosure
+
+        source = {
+            'url': self.source_url,
+            'content': self.source_content,
+        }
+        if any(source.values()):
+            entry['source'] = source
+
+        return entry
