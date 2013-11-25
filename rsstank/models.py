@@ -103,7 +103,7 @@ class FeedItem(db.Model):
         'Feed', backref=db.backref('items', lazy='dynamic', cascade='all'))
 
     # XXX TODO Нижеследующие поля отражают стандарт RSS.
-    # Вероятно, стоит сделать набор полее более общим, так, чтобы
+    # Стоит сделать набор полее более общим, так, чтобы
     # он стал подходящим для хранения элементов и Atom-фидов.
 
     # Required.  Defines the title of the item
@@ -166,6 +166,7 @@ class FeedItem(db.Model):
         return feed_item
 
     def to_context_entry(self):
+        """Возвращает словарь с данными элемента фида."""
         entry = {
             'title': self.title,
             'link': self.link,
