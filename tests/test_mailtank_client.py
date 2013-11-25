@@ -1,4 +1,5 @@
 import json
+import pytest
 
 import furl
 import httpretty
@@ -85,9 +86,11 @@ class TestMailtankClient(TestCase):
     def test_create_mailing(self):
         httpretty.register_uri(
             httpretty.POST, 'http://api.mailtank.ru/mailings/',
-            body=json.dumps(MAILING_DATA),
-            status=200,
-            content_type='text/json')
+            responses=[httpretty.Response(body=json.dumps(MAILING_DATA),
+                                          status=200,
+                                          content_type='text/json'),
+                       httpretty.Response(body='',
+                                          status=500)])
 
         mailing = self.m.create_mailing('e25388fde8',
                                         {'name': 'Max'},
@@ -98,3 +101,8 @@ class TestMailtankClient(TestCase):
         assert mailing.url == '/mailings/16'
         assert mailing.status == 'ENQUEUED'
         assert mailing.eta is None
+
+        with pytest.raises(mailtank.MailtankError) as excinfo:
+            mailing = self.m.create_mailing('e25388fde8', {}, {})
+
+        assert str(excinfo.value) == '500 <Response [500]>'
