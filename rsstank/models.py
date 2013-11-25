@@ -9,7 +9,7 @@ from . import db, app
 
 
 default_interval_start, default_interval_stop = \
-    app.config['DEFAULT_FIRST_SEND_INTERVAL']
+    app.config['RSSTANK_DEFAULT_FIRST_SEND_INTERVAL']
 
 
 class AccessKey(db.Model):
@@ -27,10 +27,10 @@ class AccessKey(db.Model):
     #: Часовой пояс для пользователя
     timezone = db.Column(db.String(50), default='utc')
     #: Начало интервала первой рассылки в utc
-    utc_first_send_interval_start = db.Column(
+    first_send_interval_start = db.Column(
         db.Time(), default=default_interval_start)
     #: Окончание интервала первой рассылки в utc
-    utc_first_send_interval_stop = db.Column(
+    first_send_interval_end = db.Column(
         db.Time(), default=default_interval_stop)
 
     @property
@@ -71,8 +71,8 @@ class Feed(db.Model):
         utc_now = dt.datetime.utcnow()
         if not self.last_sent_at:
             # Рассылка ни разу не посылалась
-            utc_start_time = self.access_key.utc_first_send_interval_start
-            utc_end_time = self.access_key.utc_first_send_interval_stop
+            utc_start_time = self.access_key.first_send_interval_start
+            utc_end_time = self.access_key.first_send_interval_end
             # Рассказываем, попадает ли текущее время в интервал, когда допустимо
             # впервые посылать фид
             return utc_start_time <= utc_now.time() <= utc_end_time

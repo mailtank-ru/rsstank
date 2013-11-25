@@ -13,7 +13,8 @@ from . import TestCase, fixtures
 
 
 def get_first_send_interval_as_datetimes(utc_now=None):
-    utc_start_time, utc_end_time = app.config['DEFAULT_FIRST_SEND_INTERVAL']
+    utc_start_time, utc_end_time = \
+        app.config['RSSTANK_DEFAULT_FIRST_SEND_INTERVAL']
     if not utc_now:
         utc_now = dt.datetime.utcnow()
     utc_today = utc_now.date()
