@@ -10,6 +10,9 @@ class DefaultConfig(object):
     SQLALCHEMY_DATABASE_URI = None
     RSSTANK_LOGLEVEL = 'INFO'
     RSSTANK_AGENT = 'rsstank/0.1'
+    #: Crawl-delay, который будет использоваться в случае, если
+    #: хост не задал свои правила в robots.txt
+    RSSTANK_DEFAULT_CRAWL_DELAY = 1
     #: UTC-время суток, в которое стоит осуществлять рассылку
     #: свежедобавленных фидов (дефолтное значение это 02:00-04:00,
     #: то есть от 8 до 10 утра по Екатеринбургу).

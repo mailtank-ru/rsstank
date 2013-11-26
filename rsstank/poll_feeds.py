@@ -34,14 +34,18 @@ def get_robots_rules(host, agent):
     правила, заданные в robots.txt хоста `host` для юзер-агента `agent`.
     """
     robots_txt_url = get_robots_txt_url(host)
-    response = requests.get(robots_txt_url)
-    rules = reppy.parser.Rules(
-        robots_txt_url, response.status_code, response.content,
-        time.time() + 3600)  # Последний параметр -- это TLL, в течение которого
-                             # будет валиден robots.txt. Нас функционал
-                             # перезапрашивания robots.txt не волнует, поэтому
-                             # передаём туда первое попавшееся валидное значение.
-    return rules[agent]
+    try:
+        response = requests.get(robots_txt_url)
+    except requests.exceptions.RequestException:
+        return None
+    else:
+        rules = reppy.parser.Rules(
+            robots_txt_url, response.status_code, response.content,
+            time.time() + 3600)  # Последний параметр -- это TLL, в течение которого
+                                 # будет валиден robots.txt. Нас функционал
+                                 # перезапрашивания robots.txt не волнует, поэтому
+                                 # передаём туда первое попавшееся валидное значение.
+        return rules[agent]
 
 
 def poll_feed(feed):
@@ -75,7 +79,7 @@ def poll_feed(feed):
     logger.info('%i items have been saved from %r.', items_saved_n, feed)
 
 
-def poll_feeds(rules, feed_ids):
+def poll_feeds(feed_ids, rules=None):
     """Сохраняет элементы фидов с идентификаторами `feed_ids` в БД.
 
     :param feed_ids: список идентификаторов фидов. URL-ы этих фидов должны
@@ -85,7 +89,7 @@ def poll_feeds(rules, feed_ids):
     """
     def _process(feed_id):
         feed = Feed.query.get(feed_id)
-        if rules.allowed(feed.url):
+        if not rules or rules.allowed(feed.url):
             poll_feed(feed)
             db.session.commit()
         else:
@@ -97,8 +101,11 @@ def poll_feeds(rules, feed_ids):
     feed_id = feed_ids.next()
     _process(feed_id)
     for feed_id in feed_ids:
-        # Уважаем Crawl-delay и спим, дабы соблюсти указанную задержку
-        time.sleep(rules.delay)
+        # Уважаем Crawl-delay и спим, дабы соблюсти задержку.
+        # Note: `rules.delay` может быть None, если в robots.txt не была
+        # указана задержка
+        time.sleep((rules and rules.delay) or
+                   app.config['RSSTANK_DEFAULT_CRAWL_DELAY'])
         _process(feed_id)
 
 
@@ -137,7 +144,7 @@ def main():
             # Делегируем таск "обнови все фиды хоста" пулу потоков.
             # 1. `poll_feeds` обновляет фиды последовательно, уважая robots.txt
             # 2. Ни для какого хоста `poll_feeds` не будет позван дважды.
-            future = executor.submit(poll_feeds, host_rules[host], feed_ids)
+            future = executor.submit(poll_feeds, feed_ids, rules=host_rules[host])
             future_to_host[future] = host
             logger.info('%i feeds for host %s has been enqueued for polling.',
                         len(host_rules), host)
