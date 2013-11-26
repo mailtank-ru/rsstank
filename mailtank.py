@@ -101,11 +101,11 @@ class Mailtank(object):
     def create_mailing(self, layout_id, context, target, attachments=None):
         """Создает и выполняет рассылку Mailtank. Возвращает :class:`Mailing`
         :param layout_id: идентификатор шаблона, который будет
-                                     использован для рассылки
+                          использован для рассылки
         :type layout_id: str
 
         :param context: словарь, содержащий данные рассылки. Должен
-                                 удовлетворять структуре используемого шаблона
+                        удовлетворять структуре используемого шаблона
         :type context: dict
 
         :param target: словарь, задающий получателей рассылки.
