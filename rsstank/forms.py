@@ -1,5 +1,4 @@
 # coding: utf-8
-import re
 import datetime as dt
 
 import pytz
@@ -10,7 +9,7 @@ import wtforms
 class TimeString(wtforms.validators.Regexp):
     """Валидирует поле, содержащее время вида ЧЧ:мм:сс"""
     def __init__(self, message=None):
-        super(TimeString, self).__init__(r'([0-1]\d|2[0-3]):[0-5]\d:[0-5]\d', re.IGNORECASE, message)
+        super(TimeString, self).__init__(r'^([0-1]\d|2[0-3]):[0-5]\d:[0-5]\d$')
 
     def __call__(self, form, field):
         message = self.message
@@ -26,16 +25,23 @@ class AuthForm(wtf.Form):
 
 
 def utctime_from_localstring(time_str, tz):
-    dtime = dt.datetime.strptime(time_str, '%H:%M:%S')
-    dtime = dtime.replace(tzinfo=pytz.timezone(tz))
-    utc_dt = dtime.astimezone(pytz.UTC)
+    """Преобразует строковое представление времени `time_str` с часовым поясом
+    `tz` в :class:`datetime.time` с часовым поясом UTC
+    """
+    t = dt.datetime.strptime(time_str, '%H:%M:%S').time()
+    dtime = dt.datetime.combine(dt.date.today(), t)
+    local_dtime = pytz.timezone(tz).localize(dtime)
+    utc_dt = local_dtime.astimezone(pytz.UTC)
     return utc_dt.time()
 
 
 def utctime_to_localstring(t, tz):
+    """Преобразует `t` класса :class:`datetime.time` в строку, используя часовой
+    пояс из строки `tz`
+    """
     dtime = dt.datetime.combine(dt.date.today(), t).replace(tzinfo=pytz.UTC)
-    utc_dt = dtime.astimezone(pytz.timezone(tz))
-    return utc_dt.strftime('%H:%M:%S')
+    local_dt = dtime.astimezone(pytz.timezone(tz))
+    return local_dt.strftime('%H:%M:%S')
 
 
 class KeyForm(wtf.Form):
@@ -54,10 +60,12 @@ class KeyForm(wtf.Form):
         super(KeyForm, self).__init__(*args, **kwargs)
         key = kwargs.get('obj', None)
         if key:
-            self.local_first_send_interval_start.data = \
-                utctime_to_localstring(key.first_send_interval_start, key.timezone)
-            self.local_first_send_interval_end.data = \
-                utctime_to_localstring(key.first_send_interval_end, key.timezone)
+            if not self.local_first_send_interval_start.data:
+                self.local_first_send_interval_start.data = \
+                    utctime_to_localstring(key.first_send_interval_start, key.timezone)
+            if not self.local_first_send_interval_end.data:
+                self.local_first_send_interval_end.data = \
+                    utctime_to_localstring(key.first_send_interval_end, key.timezone)
 
     def validate_timezone(form, field):
         try:
