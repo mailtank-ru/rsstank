@@ -4,3 +4,5 @@ httpretty==0.7.0
 furl==0.3.6
 Flask-WebTest==0.0.4
 mock==1.0.1
+freezegun==0.1.8
+testfixtures==3.0.1

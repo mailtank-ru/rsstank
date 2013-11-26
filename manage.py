@@ -8,7 +8,6 @@ import rsstank.commands
 
 manager = Manager(rsstank.app)
 manager.add_command('db', MigrateCommand)
-manager.command(rsstank.commands.sync_feed_lists)
 manager.command(rsstank.commands.poll_feeds)
 manager.command(rsstank.commands.send_feeds)
 manager.command(rsstank.commands.update_feeds)
