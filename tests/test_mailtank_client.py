@@ -1,4 +1,5 @@
 import json
+import pytest
 
 import furl
 import httpretty
@@ -51,6 +52,13 @@ PAGES_DATA = [{
     'pages_total': 3,
 }]
 
+MAILING_DATA = {
+    'eta': None,
+    'id': 16,
+    'status': 'ENQUEUED',
+    'url': '/mailings/16'
+}
+
 
 class TestMailtankClient(TestCase):
     def setup_method(self, method):
@@ -73,3 +81,28 @@ class TestMailtankClient(TestCase):
         assert tags[0].name == 'type_main_news'
         assert tags[5].name == 'tag_11592'
         assert tags[-1].name == 'tag_23564'
+
+    @httpretty.httprettified
+    def test_create_mailing(self):
+        httpretty.register_uri(
+            httpretty.POST, 'http://api.mailtank.ru/mailings/',
+            responses=[httpretty.Response(body=json.dumps(MAILING_DATA),
+                                          status=200,
+                                          content_type='text/json'),
+                       httpretty.Response(body='',
+                                          status=500)])
+
+        mailing = self.m.create_mailing('e25388fde8',
+                                        {'name': 'Max'},
+                                        {'tags': ['asdf'],
+                                         'unsubscribe_tags': ['asdf']})
+
+        assert mailing.id == 16
+        assert mailing.url == '/mailings/16'
+        assert mailing.status == 'ENQUEUED'
+        assert mailing.eta is None
+
+        with pytest.raises(mailtank.MailtankError) as excinfo:
+            mailing = self.m.create_mailing('e25388fde8', {}, {})
+
+        assert str(excinfo.value) == '500 <Response [500]>'

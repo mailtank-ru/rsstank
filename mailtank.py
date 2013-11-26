@@ -98,11 +98,45 @@ class Mailtank(object):
 
         return rv
 
-    def create_mailing(self):
-        # TODO
-        pass
+    def create_mailing(self, layout_id, context, target, attachments=None):
+        """Создает и выполняет рассылку Mailtank. Возвращает :class:`Mailing`
+        :param layout_id: идентификатор шаблона, который будет
+                          использован для рассылки
+        :type layout_id: str
+
+        :param context: словарь, содержащий данные рассылки. Должен
+                        удовлетворять структуре используемого шаблона
+        :type context: dict
+
+        :param target: словарь, задающий получателей рассылки.
+        :type target: dict
+
+        :param attachments: (опционально) список словарей, описывающих вложения
+        :type attachments: list
+        """
+        data = {
+            'context': context,
+            'layout_id': layout_id,
+            'target': target,
+        }
+        if attachments:
+            data['attachments'] = attachments
+
+        response = self._json(self._post(
+            urljoin(self._api_url, 'mailings/'),
+            data=json.dumps(data)))
+
+        return Mailing(response)
 
 
 class Tag(object):
     def __init__(self, data):
         self.name = data.get('name')
+
+
+class Mailing(object):
+    def __init__(self, data):
+        self.eta = data.get('eta')
+        self.id = data.get('id')
+        self.status = data.get('status')
+        self.url = data.get('url')
