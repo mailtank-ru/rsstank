@@ -2,7 +2,7 @@
 from flask import request, render_template, session, redirect, url_for
 
 from . import app, db
-from .forms import AuthForm, KeyForm
+from .forms import AuthForm, KeyForm, utctime_to_localstring
 from .models import AccessKey
 from mailtank import MailtankError
 
@@ -19,7 +19,9 @@ def index():
         try:
             key.mailtank.get_tags()
         except MailtankError as e:
-            form.mailtank_key.errors.append(u'Невозможно войти по такому ключу Mailtank')
+            form.mailtank_key.errors.append(
+                u'Невозможно войти по такому ключу Mailtank из-за ошибки'
+                u'"{}"'.format(e))
         else:
             session['key'] = key.content
             db.session.add(key)
@@ -35,7 +37,15 @@ def key():
     Ожидает в POST параметрах 'key'
     """
     key = AccessKey.query.filter_by(content=session['key']).first()
-    form = KeyForm(request.form, obj=key)
+    form_args = {}
+    if request.method == 'GET':
+        form_args = {
+            'local_first_send_interval_start': utctime_to_localstring(
+                key.first_send_interval_start, key.timezone),
+            'local_first_send_interval_end': utctime_to_localstring(
+                key.first_send_interval_end, key.timezone)}
+
+    form = KeyForm(request.form, obj=key, **form_args)
 
     if form.validate_on_submit():
         form.populate_obj(key)

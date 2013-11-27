@@ -8,7 +8,7 @@ import httpretty
 from . import TestCase
 from rsstank import db
 from rsstank.models import AccessKey
-from rsstank.forms import utctime_from_localstring, utctime_to_localstring, TimeString
+from rsstank.forms import utctime_from_localstring, utctime_to_localstring
 
 TAGS_DATA = {
     'objects': [
@@ -32,9 +32,24 @@ class TestAdmin(TestCase):
     def setup_method(self, method):
         TestCase.setup_method(self, method)
         self.index_url = url_for('index')
-        self.access_key = AccessKey(content='the_key', namespace='mask')
+        self.key_url = url_for('key')
+        self.access_key = AccessKey(content='the_key', namespace='space')
         db.session.add(self.access_key)
         db.session.commit()
+
+    def login(self, key):
+        with self.app.test_client() as client:
+            for cookie in self.client.cookiejar:
+                client.cookie_jar.set_cookie(cookie)
+
+            with client.session_transaction() as sess:
+                sess['key'] = key
+
+            for cookie in client.cookie_jar:
+                cookie.name = str(cookie.name)
+                cookie.value = str(cookie.value)
+                cookie.domain = self.app.config['SERVER_NAME']
+                self.client.cookiejar.set_cookie(cookie)
 
     @httpretty.httprettified
     def test_auth(self):
@@ -60,19 +75,14 @@ class TestAdmin(TestCase):
 
         # Проверяем, что ключ создался
         a = AccessKey.query.filter_by(content='asdf').first()
-        assert (a.content, a.is_enabled, a.namespace) == ('asdf', False, '')
+        assert a.content == 'asdf'
+        assert not a.is_enabled
+        assert a.namespace == ''
 
-    @httpretty.httprettified
     def test_edit(self):
         """Клиент может изменять свойства ключа"""
-        httpretty.register_uri(
-            httpretty.GET, '{}/tags'.format(self.app.config['MAILTANK_API_URL']),
-            body=json.dumps(TAGS_DATA), status=200, content_type='text/json')
-
-        # Входим в систему по ключу
-        r = self.client.get(self.index_url)
-        r.form['mailtank_key'] = 'the_key'
-        r = r.form.submit().follow()
+        self.login('the_key')
+        r = self.client.get(self.key_url)
 
         # Изменяем маску (пространство имен)
         form = r.form
@@ -80,46 +90,32 @@ class TestAdmin(TestCase):
         r = form.submit()
 
         a = AccessKey.query.first()
-        assert (a.content, a.is_enabled, a.namespace) == ('the_key', False, 'mask')
+        assert a.content == 'the_key'
+        assert not a.is_enabled
+        assert a.namespace == 'mask'
 
         # Изменяем состояние на "Включен"
-
         form['is_enabled'] = 1
         r = form.submit()
 
         a = AccessKey.query.first()
-        assert (a.content, a.is_enabled, a.namespace) == ('the_key', True, 'mask')
+        assert a.content == 'the_key'
+        assert a.is_enabled
+        assert a.namespace == 'mask'
 
     def test_time_conversion_functions(self):
         utctime = dt.time(hour=2)
-        assert utctime_to_localstring(utctime, 'Asia/Yekaterinburg') == '08:00:00'
-        assert utctime_from_localstring('08:00:00', 'Asia/Yekaterinburg') == utctime
+        assert utctime_to_localstring(utctime, 'Asia/Yekaterinburg') == 8
+        assert utctime_from_localstring('8', 'Asia/Yekaterinburg') == utctime
 
-    def test_time_validator(self):
-        regex = TimeString().regex
-        assert regex.match('12:23:34')
-        assert regex.match('23:59:59')
-        assert regex.match('03:00:00')
-        assert regex.match('00:00:00')
-        assert not regex.match('24:23:34')
-        assert not regex.match('23:60:34')
-        assert not regex.match('21:12:64')
-        assert not regex.match('24:2334')
-        assert not regex.match('124:23:34')
-        assert not regex.match('20:233:34')
-        assert not regex.match('20:23:345')
+        utctime = dt.time(hour=22)
+        assert utctime_to_localstring(utctime, 'Europe/Moscow') == 2
+        assert utctime_from_localstring('2', 'Europe/Moscow') == utctime
 
-    @httpretty.httprettified
     def test_edit_first_send_time(self):
         """Клиент может менять временной промежуток для первой рассылки"""
-        httpretty.register_uri(
-            httpretty.GET, '{}/tags'.format(self.app.config['MAILTANK_API_URL']),
-            body=json.dumps(TAGS_DATA), status=200, content_type='text/json')
-
-        # Входим в систему по ключу
-        r = self.client.get(self.index_url)
-        r.form['mailtank_key'] = 'the_key'
-        r = r.form.submit().follow()
+        self.login('the_key')
+        r = self.client.get(self.key_url)
 
         # Пользователь может установить часовой пояс и сохранить его
         form = r.form
@@ -142,8 +138,8 @@ class TestAdmin(TestCase):
 
         # Пользователь может изменить начало и конец периода
         form = r.form
-        form['local_first_send_interval_start'] = '06:00:00'
-        form['local_first_send_interval_end'] = '14:00:00'
+        form['local_first_send_interval_start'] = 6
+        form['local_first_send_interval_end'] = 14
         r = form.submit()
 
         key = AccessKey.query.first()
