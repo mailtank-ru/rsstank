@@ -4,9 +4,9 @@ import datetime as dt
 from rsstank.models import Feed, FeedItem
 
 
-def create_feed(feed_url):
+def create_feed(feed_url, key):
     """Конструирует валидный :class:`Feed`."""
-    feed = Feed(sending_interval=60 * 60 * 24, url=feed_url)
+    feed = Feed(access_key=key, sending_interval=60 * 60 * 24, url=feed_url)
     feed.tag = 'rss:test:{}:{}'.format(feed.url, feed.sending_interval)
     return feed
 

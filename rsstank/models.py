@@ -8,6 +8,10 @@ from mailtank import Mailtank
 from . import db, app
 
 
+default_interval_start, default_interval_stop = \
+    app.config['RSSTANK_DEFAULT_FIRST_SEND_INTERVAL']
+
+
 class AccessKey(db.Model):
     """Ключ доступа к API Mailtank."""
 
@@ -20,6 +24,14 @@ class AccessKey(db.Model):
     #: Пространство имён ключа (используется для ограничения множества
     #: тегов, с которыми работает rsstank)
     namespace = db.Column(db.String(255), nullable=False)
+    #: Часовой пояс для пользователя
+    timezone = db.Column(db.String(50), default='utc')
+    #: Начало интервала первой рассылки в utc
+    first_send_interval_start = db.Column(
+        db.Time(), default=default_interval_start)
+    #: Окончание интервала первой рассылки в utc
+    first_send_interval_end = db.Column(
+        db.Time(), default=default_interval_stop)
 
     @property
     def mailtank(self):
@@ -56,10 +68,11 @@ class Feed(db.Model):
         """Возвращает True, если фид допустимо посылать в текущее время;
         False в противном случае.
         """
-        utc_now = dt.datetime.utcnow() 
+        utc_now = dt.datetime.utcnow()
         if not self.last_sent_at:
             # Рассылка ни разу не посылалась
-            utc_start_time, utc_end_time = app.config['RSSTANK_FIRST_SEND_INTERVAL']
+            utc_start_time = self.access_key.first_send_interval_start
+            utc_end_time = self.access_key.first_send_interval_end
             # Рассказываем, попадает ли текущее время в интервал, когда допустимо
             # впервые посылать фид
             return utc_start_time <= utc_now.time() <= utc_end_time

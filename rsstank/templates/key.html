@@ -8,6 +8,9 @@
     {{ form.csrf_token }}
     {{ render_field(form.is_enabled) }}
     {{ render_field(form.namespace) }}
+    {{ render_field(form.timezone) }}
+    {{ render_field(form.local_first_send_interval_start) }}
+    {{ render_field(form.local_first_send_interval_end) }}
     <input type="submit" value="Сохранить">
 </form>
 

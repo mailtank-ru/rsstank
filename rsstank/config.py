@@ -16,7 +16,7 @@ class DefaultConfig(object):
     #: UTC-время суток, в которое стоит осуществлять рассылку
     #: свежедобавленных фидов (дефолтное значение это 02:00-04:00,
     #: то есть от 8 до 10 утра по Екатеринбургу).
-    RSSTANK_FIRST_SEND_INTERVAL = (dt.time(hour=2), dt.time(hour=4))
+    RSSTANK_DEFAULT_FIRST_SEND_INTERVAL = (dt.time(hour=2), dt.time(hour=4))
 
 
 class DevelopmentConfig(DefaultConfig):
