@@ -25,27 +25,18 @@ class TestCleanup(TestCase):
 
         # Создаем фид и элементы фида
         feed = fixtures.create_feed('http://feed.url', self.access_key)
-        feed.last_sent_at = current_dt
-
         item1 = fixtures.create_feed_item(1)
         item2 = fixtures.create_feed_item(2)
         item3 = fixtures.create_feed_item(3)
+        feed.items.extend([item1, item2, item3])
 
-        feed.items.append(item1)
-        feed.items.append(item2)
-        feed.items.append(item3)
-
-        db.session.add(feed)
-        db.session.commit()
-
-        # Устанавливаем разные даты для элементов фида
+        # Устанавливаем разные даты для элементов фида и дату рассылки фида
+        feed.last_sent_at = current_dt
         item1.created_at = future_dt
         item2.created_at = past_dt
         item3.created_at = current_dt
 
-        db.session.add(item2)
-        db.session.add(item1)
-        db.session.add(item3)
+        db.session.add(feed)
         db.session.commit()
 
         # Проверяем, что удаляются только устаревшие элементы фида
