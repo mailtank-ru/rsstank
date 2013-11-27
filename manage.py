@@ -11,6 +11,7 @@ manager.add_command('db', MigrateCommand)
 manager.command(rsstank.commands.poll_feeds)
 manager.command(rsstank.commands.send_feeds)
 manager.command(rsstank.commands.update_feeds)
+manager.command(rsstank.commands.cleanup)
 
 
 if __name__ == '__main__':

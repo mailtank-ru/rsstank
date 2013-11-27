@@ -12,7 +12,8 @@ def delete_sent_feed_items(feed):
     последнего отправления фида
     """
     if feed.last_sent_at:
-        items_to_delete = feed.items.filter(FeedItem.created_at < feed.last_sent_at).all()
+        items_to_delete = feed.items.filter(
+            FeedItem.created_at < feed.last_sent_at).all()
         logger.info('{0} outdated feed items found for feed #{1} with tag {2}'
                     .format(len(items_to_delete), feed.id, feed.tag))
         for item in items_to_delete:
