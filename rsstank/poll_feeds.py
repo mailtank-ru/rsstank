@@ -61,7 +61,6 @@ def poll_feed(feed):
     last_pub_date = feed.last_pub_date
     for entry in feed_data.entries:
         feed_item = FeedItem.from_feedparser_entry(entry)
-        feed_item.feed_id = feed.id
         # Проверяем дату публикации элемента фида. Если элемент фида опубликован
         # в будущем, то не обрабатываем его
         if feed_item.pub_date < datetime.datetime.utcnow():
@@ -71,9 +70,7 @@ def poll_feed(feed):
                 # то же время, значит мы его уже загружали
                 continue
 
-            db.session.begin(nested=True)
-            db.session.add(feed_item)
-            db.session.commit()
+            feed.items.append(feed_item)
             items_saved_n += 1
             if not last_pub_date or last_pub_date < feed_item.pub_date:
                 # Запоминаем дату публикации фида, опубликованного позже
