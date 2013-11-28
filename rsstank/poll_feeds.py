@@ -8,7 +8,6 @@ import logging
 import requests
 import feedparser
 import reppy.parser
-import sqlalchemy
 from furl import furl
 
 from . import app
@@ -63,28 +62,23 @@ def poll_feed(feed):
     for entry in feed_data.entries:
         feed_item = FeedItem.from_feedparser_entry(entry)
         feed_item.feed_id = feed.id
+        # Проверяем дату публикации элемента фида. Если элемент фида опубликован
+        # в будущем, то не обрабатываем его
         if feed_item.pub_date < datetime.datetime.utcnow():
-            #Элелемент фида не из будущего
+            # Публикация элемента фида совершена в прошлом
             if feed.last_pub_date and feed_item.pub_date <= feed.last_pub_date:
                 # Элемент опубликован раньше, чем последний элемент фида, или в
-                # то же время значит мы его уже загружали
+                # то же время, значит мы его уже загружали
                 continue
 
             db.session.begin(nested=True)
             db.session.add(feed_item)
-            try:
-                db.session.commit()
-            except sqlalchemy.exc.IntegrityError:
-                # IntegrityError может быть вызван тем, что в базе уже существует
-                # FeedItem с таким же `feed_id` и `guid`. Это абсолютно нормально;
-                # мы должны лишь откатить вложенную транзакцию.
-                db.session.rollback()
-            else:
-                items_saved_n += 1
-                if not last_pub_date or last_pub_date < feed_item.pub_date:
-                    # Запоминаем дату публикации фида, опубликованного позже
-                    # предыдущих
-                    last_pub_date = feed_item.pub_date
+            db.session.commit()
+            items_saved_n += 1
+            if not last_pub_date or last_pub_date < feed_item.pub_date:
+                # Запоминаем дату публикации фида, опубликованного позже
+                # предыдущих
+                last_pub_date = feed_item.pub_date
 
     feed.last_polled_at = datetime.datetime.utcnow()
     # Сохраняем дату публикации последнего фида
@@ -104,7 +98,6 @@ def poll_feeds(feed_ids, rules=None):
         feed = Feed.query.get(feed_id)
         if not rules or rules.allowed(feed.url):
             poll_feed(feed)
-            db.session.add(feed)
             db.session.commit()
         else:
             logger.warn('Accessing %r is forbidden by host\'s robots.txt.', feed)
