@@ -56,6 +56,8 @@ class Feed(db.Model):
     last_polled_at = db.Column(db.DateTime)
     #: Дата и время последнего создания рассылки по фиду
     last_sent_at = db.Column(db.DateTime)
+    #: Дата и время последней публикации элемента фида
+    last_pub_date = db.Column(db.DateTime)
     #: Ключ доступа к Mailtank API, к которому привязан фид
     access_key = db.relationship(
         'AccessKey',
@@ -95,18 +97,6 @@ class Feed(db.Model):
 
 class FeedItem(db.Model):
     """Элемент фида."""
-
-    __table_args__ = (
-        # `guid` может быть очень большим, в то время как MySQL
-        # ограничивает длину проиндексированного поля 767 байтами.
-        # Указывая `mysql_length`, мы говорим MySQL строить
-        # индекс не по всему полю, а только по первым его 255 символам.
-        # 255 умножить на три (MySQL использует только три байта
-        # для хранения UTF-8 символов) меньше 767.
-        db.Index('unique_guid_within_a_feed', 'feed_id', 'guid',
-                 unique=True, mysql_length={'guid': 255}),
-    )
-
     id = db.Column(db.Integer, primary_key=True)
     feed_id = db.Column(db.Integer, db.ForeignKey('feed.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, index=True,

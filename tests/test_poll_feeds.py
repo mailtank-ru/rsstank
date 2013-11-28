@@ -109,6 +109,7 @@ class TestPollFeeds(TestCase):
 
         for feed in self.access_key.feeds:
             poll_feeds.poll_feed(feed)
+            db.session.commit()
 
         feed_66_ru = self.access_key.feeds.filter(Feed.url.contains('66.ru')).first()
         assert feed_66_ru.items.count() == 10
@@ -133,6 +134,7 @@ class TestPollFeeds(TestCase):
             httpretty.register_uri(httpretty.GET, feed.url, body=rss_data)
 
         poll_feeds.poll_feed(feed)
+        db.session.commit()
         assert feed.items.count() == 5
 
         httpretty.reset()
@@ -144,6 +146,7 @@ class TestPollFeeds(TestCase):
             httpretty.register_uri(httpretty.GET, feed.url, body=rss_data)
 
         poll_feeds.poll_feed(feed)
+        db.session.commit()
         assert feed.items.count() == 8  # 5 штук (A B C D E) + 3 штуки (F G H)
 
         guids_in_db = [item.guid for item in feed.items]
@@ -151,6 +154,15 @@ class TestPollFeeds(TestCase):
         assert len(guids_in_db) == len(set(guids_in_db))
         # И отражают записи как до "обновления фида", так и после
         assert set(guids_in_db) == (guids_before_update | guids_after_update)
+
+        # Проверим, что после чистки старые элементы не будут подгружены
+        for item in feed.items.all():
+            db.session.delete(item)
+        db.session.commit()
+
+        poll_feeds.poll_feed(feed)
+        db.session.commit()
+        assert feed.items.count() == 0
 
     @httpretty.httprettified
     def test_main(self):
