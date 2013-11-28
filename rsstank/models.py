@@ -56,6 +56,8 @@ class Feed(db.Model):
     last_polled_at = db.Column(db.DateTime)
     #: Дата и время последнего создания рассылки по фиду
     last_sent_at = db.Column(db.DateTime)
+    #: Дата и время последней публикации элемента фида
+    last_pub_date = db.Column(db.DateTime)
     #: Ключ доступа к Mailtank API, к которому привязан фид
     access_key = db.relationship(
         'AccessKey',

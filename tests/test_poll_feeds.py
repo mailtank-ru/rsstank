@@ -152,6 +152,14 @@ class TestPollFeeds(TestCase):
         # И отражают записи как до "обновления фида", так и после
         assert set(guids_in_db) == (guids_before_update | guids_after_update)
 
+        # Проверим, что после чистки старые элементы не будут подгружены
+        for item in feed.items.all():
+            db.session.delete(item)
+        db.session.commit()
+
+        poll_feeds.poll_feed(feed)
+        assert feed.items.count() == 0
+
     @httpretty.httprettified
     def test_main(self):
         httpretty.register_uri(
