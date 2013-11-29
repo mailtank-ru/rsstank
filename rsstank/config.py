@@ -8,6 +8,7 @@ class DefaultConfig(object):
 
     SENTRY_DSN = None
     SQLALCHEMY_DATABASE_URI = None
+    MAILTANK_API_URL = 'http://api.mailtank.ru'
     RSSTANK_LOGLEVEL = 'INFO'
     RSSTANK_AGENT = 'rsstank/0.1'
     #: Crawl-delay, который будет использоваться в случае, если
@@ -22,7 +23,7 @@ class DefaultConfig(object):
 class DevelopmentConfig(DefaultConfig):
     DEBUG = True
     SECRET_KEY = 'development'
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:@localhost/rsstank'
+    SQLALCHEMY_DATABASE_URI = 'mysql://user:@192.168.33.10/rsstank'
 
 
 class TestingConfig(DefaultConfig):
