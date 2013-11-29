@@ -18,7 +18,7 @@ reppy==0.2.2
 ipython==1.1.0  # Во имя красивого ./manage.py shell
 furl==0.3.6
 requests==2.0.1
-alembic==0.6.0
+alembic==0.6.1
 distribute==0.6.34
 itsdangerous==0.23
 blinker==1.3
