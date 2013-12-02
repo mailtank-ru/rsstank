@@ -14,3 +14,11 @@
 
 1. Установить зависимости, перечисленные в `requirements/dev.txt`;
 2. `./test.sh`
+
+Сборка и запуск приложения в Docker-контейнере:
+
+```
+cd docker
+docker build .
+./rsstank.sh <container-id>
+```
