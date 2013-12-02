@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Яндекс.Новости: В мире</title>
+    <link>http://news.yandex.ru/world.html</link>
+    <description>
+      Первая в России служба автоматической обработки и систематизации новостей. Сообщения ведущих российских и мировых СМИ. Обновление в режиме реального времени 24 часа в сутки.
+    </description>
+    <image>
+      <url>http://company.yandex.ru/i/50x23.gif</url>
+      <link>http://news.yandex.ru/world.html</link>
+      <title>Яндекс.Новости: В мире</title>
+    </image>
+    <lastBuildDate>20 Nov 2013 10:31:59 +0400</lastBuildDate>
+    <item>
+      <title>США не намерены извиняться перед Афганистаном за военные ошибки</title>
+      <link>http://news.yandex.ru/yandsearch?cl4url=diver-sant.ru%2Fpolitics%2F40397-ssha-ne-namereny-izvinyatsya-pered-afganistanom-za-voennye-oshibki.html</link>
+      <description>Барак Обама никогда не отправлял и не собирается писать подобное письмо афганской стороне, заявила советник президента США по национальной безопасности Сьюзан Райс. По словам Райс, писать такое письмо не планировалось, поскольку США незачем извиняться перед Афганистаном.</description>
+      <guid>http://news.yandex.ru/yandsearch?cl4url=diver-sant.ru%2Fpolitics%2F40397-ssha-ne-namereny-izvinyatsya-pered-afganistanom-za-voennye-oshibki.html</guid>
+    </item>
+    <item>
+      <title>Cборная России обыграла корейцев</title>
+      <link>http://link.url</link>
+      <description>Сегодня в Дубае сборная России провела товарищеский матч с Южной Кореей. Победу со счетом 2:1 одержали подопечные Фабио Капелло. Голы забили Федор Смолов и Дмитрий Тарасов. Товарищеский матч ПРИМЕЧАНИЕ: время начала матча – московское.</description>
+      <pubDate>19 Nov 2013 22:44:01 +0400</pubDate>
+    </item>
+  </channel>
+</rss>

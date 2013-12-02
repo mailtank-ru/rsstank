@@ -165,6 +165,21 @@ class TestPollFeeds(TestCase):
         assert feed.items.count() == 0
 
     @httpretty.httprettified
+    def test_poll_feed_parse_defective_feed_items(self):
+        feed = fixtures.create_feed('http://feed.url', self.access_key)
+        feed.access_key = self.access_key
+        db.session.add(feed)
+        db.session.commit()
+
+        with open('./tests/fixtures/defective-rss') as fh:
+            httpretty.register_uri(httpretty.GET, feed.url, body=fh.read())
+
+        poll_feeds.poll_feed(feed)
+        db.session.commit()
+        assert feed.items.count() == 1
+        assert feed.items.first().guid == 'http://link.url'
+
+    @httpretty.httprettified
     def test_main(self):
         httpretty.register_uri(
             httpretty.GET, 'http://news.yandex.ru/robots.txt', body=ROBOTS_TXT_1)
