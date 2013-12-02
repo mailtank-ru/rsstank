@@ -35,7 +35,7 @@ class KeyForm(wtf.Form):
     """Форма редактирования настроек для ключа"""
     is_enabled = wtforms.BooleanField(u'Включен',
                                       [wtforms.validators.NumberRange(0, 1)])
-    namespace = wtforms.TextField(u'Пространство имен (маска для тэгов)')
+    namespace = wtforms.TextField(u'Пространство имен (маска для тегов)')
     timezone = wtforms.TextField(u'Часовой пояс', [wtforms.validators.Required()])
     local_first_send_interval_start = \
         wtforms.SelectField(u'Начало временного промежутка первой рассылки',
