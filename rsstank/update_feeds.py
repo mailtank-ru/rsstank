@@ -52,7 +52,7 @@ def main():
             tags = key.mailtank.get_tags(mask=mask)
         except MailtankError as e:
             # Что-то пошло не так, помечаем ключ как 'выключенный'
-            logger.info(u'Error during connecting with key {0}: "{1}"'
+            logger.warn(u'Error during connecting with key {0}: "{1}"'
                         .format(key.content, e))
             key.is_enabled = False
             db.session.add(key)
