@@ -62,7 +62,16 @@ def poll_feed(feed):
     for entry in feed_data.entries:
         feed_item = FeedItem.from_feedparser_entry(entry)
         # Проверяем дату публикации элемента фида. Если элемент фида опубликован
-        # в будущем, то не обрабатываем его
+        # в будущем, то не обрабатываем его. Если у элемента фида не было поля
+        # pubDate, то не обрабатываем его
+        if not feed_item.guid:
+            feed_item.guid = feed_item.link
+
+        if not feed_item.pub_date:
+            logger.info('Feed {0} has an item {1} with no "pubDate"'
+                        .format(feed.id, feed_item.guid))
+            continue
+
         if feed_item.pub_date < datetime.datetime.utcnow():
             # Публикация элемента фида совершена в прошлом
             if feed.last_pub_date and feed_item.pub_date <= feed.last_pub_date:
