@@ -68,7 +68,7 @@ def poll_feed(feed):
             feed_item.guid = feed_item.link
 
         if not feed_item.pub_date:
-            logger.info('Feed {0} has an item {1} with no "pubDate"'
+            logger.warn('Feed {0} has an item {1} with no "pubDate"'
                         .format(feed.id, feed_item.guid))
             continue
 
