@@ -152,6 +152,31 @@ class TestSendFeeds(TestCase):
         assert repr(mailtank_error_stub) in log_message
         assert repr(feed) in log_message
 
+    def test_unique_items_in_mailing(self):
+        feed = fixtures.create_feed('http://example.com/example-1.rss', self.access_key)
+        feed.sending_interval = 60 * 60 * 24
+        feed.access_key = self.access_key
+
+        # Создаем два элемента с разными `pub_date` и одинаковыми `guid`
+        item1 = fixtures.create_feed_item(1)
+        item2 = fixtures.create_feed_item(1)
+        item3 = fixtures.create_feed_item(3)
+
+        item2.pub_date = dt.datetime(2013, 11, 21, 12, 00, 00) - dt.timedelta(days=2)
+        feed.items.extend([item2, item1, item3])
+        db.session.add(feed)
+        db.session.commit()
+
+        # Проверяем, что в рассылке не будет дублирующихся элементов фида
+
+        with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+            send_feeds.send_feed(feed)
+            call, args = create_mailing_mock.call_args
+            context = args['context']
+            assert len(context['items']) == 2
+            assert context['items'][1]['pub_date'] == \
+                item1.pub_date.strftime('%Y-%m-%d %H:%M:%S')
+
     def test_main(self):
         # Создаём фид номер раз
         feed_1 = fixtures.create_feed('http://example.com/example-1.rss', self.access_key)
