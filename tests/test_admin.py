@@ -10,6 +10,7 @@ from rsstank import db
 from rsstank.models import AccessKey
 from rsstank.forms import utctime_from_localstring, utctime_to_localstring
 
+
 TAGS_DATA = {
     'objects': [
         {u'name': 'type_main_news'},
@@ -38,18 +39,8 @@ class TestAdmin(TestCase):
         db.session.commit()
 
     def login(self, key):
-        with self.app.test_client() as client:
-            for cookie in self.client.cookiejar:
-                client.cookie_jar.set_cookie(cookie)
-
-            with client.session_transaction() as sess:
-                sess['key'] = key
-
-            for cookie in client.cookie_jar:
-                cookie.name = str(cookie.name)
-                cookie.value = str(cookie.value)
-                cookie.domain = self.app.config['SERVER_NAME']
-                self.client.cookiejar.set_cookie(cookie)
+        with self.client.session_transaction() as sess:
+            sess['key'] = key
 
     @httpretty.httprettified
     def test_auth(self):

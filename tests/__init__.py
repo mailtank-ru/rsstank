@@ -47,8 +47,7 @@ class TestCase(SQLAlchemyMixin, SQLAlchemyFixtureMixin):
         self.drop_database()
         self.create_database()
         self.load_fixtures()
-        self.client = TestApp(self.app, db=self.db, use_session_scopes=True,
-                              extra_environ={'HTTP_HOST': 'rsstank.local'})
+        self.client = TestApp(self.app, db=self.db, use_session_scopes=True)
 
     def teardown_method(self, method):
         self.db.session.remove()
