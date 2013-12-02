@@ -23,13 +23,11 @@ class DefaultConfig(object):
 class DevelopmentConfig(DefaultConfig):
     DEBUG = True
     SECRET_KEY = 'development'
-    SQLALCHEMY_DATABASE_URI = 'mysql://user:@192.168.33.10/rsstank'
 
 
 class TestingConfig(DefaultConfig):
     TESTING = True
     SECRET_KEY = 'testing'
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:@localhost/rsstank_test'
     SERVER_NAME = 'rsstank.local'
     MAILTANK_API_URL = 'http://api.mailtank.local'
     RSSTANK_LOGLEVEL = 'WARNING'
