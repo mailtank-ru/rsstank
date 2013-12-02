@@ -14,7 +14,7 @@ config = os.environ.get('RSSTANK_CONFIG', 'rsstank.config.DefaultConfig')
 app.config.from_object(config)
 
 db = SQLAlchemy(app)
-migrate = Migrate(app)
+migrate = Migrate(app, db)
 
 
 formatter = logging.Formatter('%(asctime)s: %(message)s')
