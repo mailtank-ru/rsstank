@@ -1,5 +1,5 @@
 # coding: utf-8
-from flask import request, render_template, session, redirect, url_for
+from flask import request, render_template, session, redirect, url_for, abort
 
 from . import app, db
 from .forms import AuthForm, KeyForm, utctime_to_localstring
@@ -28,15 +28,17 @@ def index():
             db.session.commit()
             return redirect(url_for('key'))
 
+    session.pop('key', None)
     return render_template('index.html', form=form)
 
 
 @app.route('/key/', methods=['GET', 'POST'])
 def key():
     """Вьюшка, позволяющая менять настройки ключа от Mailtank в системе.
-    Ожидает в POST параметрах 'key'
+    Ожидает, что в session лежит ключ 'key', уже созданный в базе данных.
     """
-    key = AccessKey.query.filter_by(content=session['key']).first()
+    key_content = session.get('key') or abort(403)
+    key = AccessKey.query.filter_by(content=key_content).first_or_404()
     form_args = {}
     if request.method == 'GET':
         form_args = {

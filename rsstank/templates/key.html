@@ -1,17 +1,25 @@
 {% extends "base.html" %}
 {% from 'utils.html' import render_field %}
 
+{% block title %}Редактирование ключа - rsstank{% endblock %}
+
 {% block content %}
 <h1>Ключ {{ key.content }}</h1>
 
-<form method="POST">
+<form method="POST" class="form-horizontal col-md-9" role="form">
     {{ form.csrf_token }}
-    {{ render_field(form.is_enabled) }}
     {{ render_field(form.namespace) }}
     {{ render_field(form.timezone) }}
     {{ render_field(form.local_first_send_interval_start) }}
     {{ render_field(form.local_first_send_interval_end) }}
-    <input type="submit" value="Сохранить">
+    {{ render_field(form.is_enabled) }}
+    <hr>
+    <div class="form-group">
+        <div class='col-md-offset-3 col-md-9'>
+            <button class="btn btn-primary" type="submit">Сохранить</button>
+            <a href="" class="btn btn-default">Отменить</a>
+            <a href="{{ url_for('index') }}" class="btn btn-danger pull-right">Выйти</a>
+        </div>
+    </div>
 </form>
-
 {% endblock %}

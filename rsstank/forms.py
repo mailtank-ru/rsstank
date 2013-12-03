@@ -35,14 +35,18 @@ class KeyForm(wtf.Form):
     """Форма редактирования настроек для ключа"""
     is_enabled = wtforms.BooleanField(u'Включен',
                                       [wtforms.validators.NumberRange(0, 1)])
-    namespace = wtforms.TextField(u'Пространство имен (маска для тегов)')
-    timezone = wtforms.TextField(u'Часовой пояс', [wtforms.validators.Required()])
+    namespace = wtforms.TextField(u'Пространство имен (маска для тегов)',
+                                  [wtforms.validators.Required()])
+    timezone = wtforms.SelectField(u'Часовой пояс',
+                                   choices=[(tz, tz) for tz in pytz.common_timezones])
     local_first_send_interval_start = \
         wtforms.SelectField(u'Начало временного промежутка первой рассылки',
-                            choices=[(i, i) for i in range(0, 24)], coerce=int)
+                            choices=[(i, '{}:00'.format(i)) for i in range(0, 24)],
+                            coerce=int)
     local_first_send_interval_end = \
         wtforms.SelectField(u'Конец временного промежутка первой рассылки',
-                            choices=[(i, i) for i in range(0, 24)], coerce=int)
+                            choices=[(i, '{}:00'.format(i)) for i in range(0, 24)],
+                            coerce=int)
 
     def validate_timezone(form, field):
         try:

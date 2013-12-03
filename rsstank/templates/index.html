@@ -2,13 +2,16 @@
 {% from 'utils.html' import render_field %}
 
 {% block content %}
-<h1>rsstank</h1>
-
-<form method="POST">
+<div class="page-header">
+    <h1>Вход в систему</h1>
+</div>
+<form method="POST" class="form-horizontal col-md-9" role="form">
     {{ form.csrf_token }}
-    <h2>Вход в систему</h2>
     {{ render_field(form.mailtank_key) }}
-    <input type="submit" value="Войти">
+    <div class="form-group">
+        <div class='col-md-offset-3 col-md-9'>
+            <button class="btn btn-primary" type="submit">Войти</button>
+        </div>
+    </div>
 </form>
-    
 {% endblock %}

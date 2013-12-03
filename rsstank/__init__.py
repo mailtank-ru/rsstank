@@ -37,5 +37,10 @@ if app.config['SENTRY_DSN'] and not app.config['TESTING']:
     logger.addHandler(sentry_handler)
 
 
+@app.errorhandler(403)
+def not_authorized(e):
+    return flask.redirect(flask.url_for('index'))
+
+
 # Регистрируем вьюхи после инициализации приложения:
 from . import views
