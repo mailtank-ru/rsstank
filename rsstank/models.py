@@ -25,7 +25,7 @@ class AccessKey(db.Model):
     #: тегов, с которыми работает rsstank)
     namespace = db.Column(db.String(255), nullable=False)
     #: Часовой пояс для пользователя
-    timezone = db.Column(db.String(50), default='utc')
+    timezone = db.Column(db.String(50), default='UTC')
     #: Начало интервала первой рассылки в utc
     first_send_interval_start = db.Column(
         db.Time(), default=default_interval_start)

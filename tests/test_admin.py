@@ -120,15 +120,11 @@ class TestAdmin(TestCase):
         # Пользователь может установить часовой пояс и сохранить его
         form = r.form
 
-        form['timezone'] = 'asdfasdf'
-        r = form.submit()
-        assert len(r.context['form'].timezone.errors) == 1
-
-        form['timezone'] = 'utc'
+        form['timezone'] = 'UTC'
         r = form.submit()
 
         key = AccessKey.query.first()
-        assert key.timezone == 'utc'
+        assert key.timezone == 'UTC'
 
         form['timezone'] = 'Europe/Moscow'
         r = form.submit()

@@ -1,13 +1,21 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>rsstank</title>
+    <title>{% block title %}rsstank{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" type="text/css">
 </head>
 <body>
-    {% block content %}
-        
-    {% endblock %}
-
+    <div class="container">
+        <nav class="navbar navbar-inverse" role="navigation">
+            <a class="navbar-brand" href="/">rsstank</a>        
+        </nav>
+        <div class="content container">
+        {% block content %}
+        {% endblock %}
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/jquery-2.0.3.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 </body>
 </html>
