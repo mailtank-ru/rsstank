@@ -22,3 +22,11 @@ cd docker
 docker build .
 ./rsstank.sh <container-id>
 ```
+
+## Формат тегов
+
+`rss:<namespace>:<url>:<interval>`, где:
+
+* <namespace> — пространство имён, которое указывается в настройках ключа;
+* <url> — URL RSS- или Atom-фида;
+* <interval> — интервал в секундах между рассылками фидов.
