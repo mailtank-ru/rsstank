@@ -4,20 +4,25 @@ import logging
 from .models import db, AccessKey, Feed
 from mailtank import MailtankError
 
+
 logger = logging.getLogger(__name__)
 
 
 def sync(tags, key):
-    """Синхронизирует фиды ключа `key` rsstank в соответствии с тегами `tags` Mailtank"""
+    """Синхронизирует фиды ключа `key` rsstank в соответствии с
+    тегами `tags` Mailtank.
+    
+    :type tags: список строк
+    """
     feeds = key.feeds.all()
     # Строим словарь из фидов с ключом 'интервал:адрес'
     feeds_by_url = \
         {u'{0}:{1}'.format(feed.sending_interval, feed.url): feed for feed in feeds}
 
     for tag in tags:
-        if ':' not in tag.name:
+        if ':' not in tag:
             continue
-        head, rest = tag.name.split(':', 1)
+        head, rest = tag.split(':', 1)
         if head != 'rss':
             continue
 
@@ -28,7 +33,7 @@ def sync(tags, key):
             interval = int(interval)
         except ValueError as e:
             # Плохой тег
-            logger.warn(u'Error "{0}" during parsing tag: {1}'.format(e, tag.name))
+            logger.warn(u'Error "{0}" during parsing tag: {1}'.format(e, tag))
         else:
             # Ищем, есть ли фид для этого тега, если нет то создаем
             feed = feeds_by_url.get(u'{0}:{1}'.format(interval, url))
@@ -37,7 +42,7 @@ def sync(tags, key):
             else:
                 db.session.add(
                     Feed(access_key=key, sending_interval=interval, url=url, tag=tag))
-            logger.info(u'Tag {} synced'.format(tag.name))
+            logger.info(u'Tag {} synced'.format(tag))
 
     for feed in feeds:
         # Удаляем фиды, для которых не было тега
@@ -55,7 +60,7 @@ def main():
     for key in keys:
         mask = u'rss:{}:'.format(key.namespace)
         try:
-            tags = key.mailtank.get_tags(mask=mask)
+            tags = [tag.name for tag in key.mailtank.get_tags(mask=mask)]
         except MailtankError as e:
             # Что-то пошло не так, помечаем ключ как 'выключенный'
             logger.warn(u'Error during connecting with key {0}: "{1}"'
