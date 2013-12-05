@@ -15,14 +15,20 @@ def sync(tags, key):
         {u'{0}:{1}'.format(feed.sending_interval, feed.url): feed for feed in feeds}
 
     for tag in tags:
+        if ':' not in tag.name:
+            continue
+        head, rest = tag.name.split(':', 1)
+        if head != 'rss':
+            continue
+
         try:
             # Парсим тег
-            rss, namespace, url_and_interval = tag.name.split(':', 2)
+            namespace, url_and_interval = rest.split(':', 1)
             url, interval = url_and_interval.rsplit(':', 1)
             interval = int(interval)
         except ValueError as e:
             # Плохой тег
-            logger.info(u'Error "{0}" during parsing tag: {1}'.format(e, tag.name))
+            logger.warn(u'Error "{0}" during parsing tag: {1}'.format(e, tag.name))
         else:
             # Ищем, есть ли фид для этого тега, если нет то создаем
             feed = feeds_by_url.get(u'{0}:{1}'.format(interval, url))
