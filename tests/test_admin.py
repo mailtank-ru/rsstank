@@ -97,11 +97,11 @@ class TestAdmin(TestCase):
     def test_time_conversion_functions(self):
         utctime = dt.time(hour=2)
         assert utctime_to_localstring(utctime, 'Asia/Yekaterinburg') == 8
-        assert utctime_from_localstring('8', 'Asia/Yekaterinburg') == utctime
+        assert utctime_from_localstring(8, 'Asia/Yekaterinburg') == utctime
 
         utctime = dt.time(hour=22)
         assert utctime_to_localstring(utctime, 'Europe/Moscow') == 2
-        assert utctime_from_localstring('2', 'Europe/Moscow') == utctime
+        assert utctime_from_localstring(2, 'Europe/Moscow') == utctime
 
     def test_edit_first_send_time(self):
         """Клиент может менять временной промежуток для первой рассылки"""

@@ -2,8 +2,8 @@
 import datetime as dt
 
 import pytz
-from flask.ext import wtf
 import wtforms
+from flask.ext import wtf
 
 
 class AuthForm(wtf.Form):
@@ -12,10 +12,13 @@ class AuthForm(wtf.Form):
 
 
 def utctime_from_localstring(hour, tz):
-    """Преобразует `hour` с часовым поясом
-    `tz` в :class:`datetime.time` с часовым поясом UTC
+    """Преобразует `hour` с часовым поясом `tz` в :class:`datetime.time`
+    с часовым поясом UTC.
+
+    :type hour: int
+    :type tz: str
     """
-    t = dt.time(hour=int(hour))
+    t = dt.time(hour=hour)
     dtime = dt.datetime.combine(dt.date.today(), t)
     local_dtime = pytz.timezone(tz).localize(dtime)
     utc_dt = local_dtime.astimezone(pytz.UTC)
@@ -23,8 +26,11 @@ def utctime_from_localstring(hour, tz):
 
 
 def utctime_to_localstring(t, tz):
-    """Преобразует `t` класса :class:`datetime.time` в часы, используя часовой
-    пояс из строки `tz`
+    """Преобразует `t` в часы, используя часовой пояс из `tz`.
+
+    :type t: :class:`datetime.time`
+    :type tz: str
+    :rtype: int
     """
     dtime = dt.datetime.combine(dt.date.today(), t).replace(tzinfo=pytz.UTC)
     local_dt = dtime.astimezone(pytz.timezone(tz))
@@ -54,7 +60,6 @@ class KeyForm(wtf.Form):
         except pytz.UnknownTimeZoneError:
             field.errors.append(u'Неправильный часовой пояс')
             return False
-
         return True
 
     def populate_obj(self, key):

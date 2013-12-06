@@ -39,15 +39,15 @@ def key():
     """
     key_content = session.get('key') or abort(403)
     key = AccessKey.query.filter_by(content=key_content).first_or_404()
-    form_args = {}
+    form_kwargs = {}
     if request.method == 'GET':
-        form_args = {
+        form_kwargs = {
             'local_first_send_interval_start': utctime_to_localstring(
                 key.first_send_interval_start, key.timezone),
             'local_first_send_interval_end': utctime_to_localstring(
                 key.first_send_interval_end, key.timezone)}
 
-    form = KeyForm(request.form, obj=key, **form_args)
+    form = KeyForm(request.form, obj=key, **form_kwargs)
 
     if form.validate_on_submit():
         form.populate_obj(key)
