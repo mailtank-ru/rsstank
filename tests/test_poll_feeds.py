@@ -115,6 +115,10 @@ class TestPollFeeds(TestCase):
         assert feed_66_ru.items.count() == 10
         item = feed_66_ru.items.filter_by(guid='66.ru:news:147137').first()
         assert item.description == u'Президент РЖД хочет заменить их двухэтажными.'
+        assert feed_66_ru.channel_link == 'http://66.ru'
+        assert feed_66_ru.channel_description == u'Удобные новости'
+        assert feed_66_ru.channel_title == u'66.ru — Городской портал Екатеринбурга'
+        assert feed_66_ru.channel_image_url == u'http://s.66.ru/localStorage/3c/87/06/84/3c870684.gif'
 
         feed_yandex_ru = self.access_key.feeds.filter(Feed.url.contains('yandex.ru')).first()
         assert feed_yandex_ru.items.count() == 15

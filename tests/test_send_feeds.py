@@ -168,14 +168,31 @@ class TestSendFeeds(TestCase):
         db.session.commit()
 
         # Проверяем, что в рассылке не будет дублирующихся элементов фида
+        with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+            send_feeds.send_feed(feed)
+
+        call, args = create_mailing_mock.call_args
+        context = args['context']
+        assert len(context['items']) == 2
+        assert context['items'][1]['pub_date'] == \
+            item1.pub_date.strftime('%Y-%m-%d %H:%M:%S')
+
+    def test_context_contains_channel_data(self):
+        feed = fixtures.create_feed('http://example.com/example-1.rss', self.access_key)
+        item = fixtures.create_feed_item(1)
+        feed.items.append(item)
+        db.session.add(feed)
+        db.session.commit()
 
         with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
             send_feeds.send_feed(feed)
-            call, args = create_mailing_mock.call_args
-            context = args['context']
-            assert len(context['items']) == 2
-            assert context['items'][1]['pub_date'] == \
-                item1.pub_date.strftime('%Y-%m-%d %H:%M:%S')
+
+        call, args = create_mailing_mock.call_args
+        context = args['context']
+        assert context['channel']['link'] == feed.channel_link
+        assert context['channel']['description'] == feed.channel_description
+        assert context['channel']['title'] == feed.channel_title
+        assert context['channel']['image_url'] == feed.channel_image_url
 
     def test_main(self):
         # Создаём фид номер раз

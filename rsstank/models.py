@@ -65,6 +65,17 @@ class Feed(db.Model):
         'AccessKey',
         backref=db.backref('feeds', lazy='dynamic', cascade='all'))
 
+    # Нижеследующие поля содержат информацию из тега <channel> фида
+
+    #: Required.  Defines the title of the item
+    channel_title = db.Column(db.String(2000))
+    #: Required. Defines the hyperlink to the item
+    channel_link = db.Column(db.String(2000))
+    #: Required. Describes the item
+    channel_description = db.Column(db.Text)
+    #: Optional. Defines the URL to the image
+    channel_image_url = db.Column(db.String(2000))
+
     def __repr__(self):
         return '<Feed #{0} {1}>'.format(self.id, self.url[:60])
 
