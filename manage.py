@@ -13,8 +13,8 @@ from rsstank.cleanup import main as cleanup
 
 
 def sentrify(f):
-    """Декоратор, логирующий все исключения функции в Sentry (
-    :obj:`rsstank.sentry`.
+    """Декоратор, логирующий все исключения функции в Sentry
+    (:obj:`rsstank.sentry`).
     """
     if not rsstank.sentry:
         return f
