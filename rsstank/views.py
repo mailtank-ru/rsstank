@@ -56,3 +56,17 @@ def key():
         return redirect(url_for('.key'))
 
     return render_template('key.html', key=key, form=form)
+
+
+@app.route('/layout/', methods=['POST'])
+def layout():
+    key_content = session.get('key') or abort(403)
+    key = AccessKey.query.filter_by(content=key_content).first_or_404()
+    layout = key.mailtank.create_layout(
+        name=u'Шаблон rsstank',
+        subject_markup=u'Разметка темы',
+        markup=u'Разметка тела. Не забудьте вставить {{ unsubscribe_link }}!')
+    key.layout_id = layout.id
+    db.session.commit()
+    return redirect(url_for('.key'))
+            

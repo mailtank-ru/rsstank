@@ -6,14 +6,34 @@
 {% block content %}
 <h1>Ключ {{ key.content }}</h1>
 
-<form method="POST" class="form-horizontal col-md-9" role="form">
+<form method="POST" class="form-horizontal col-md-9" role="form" id="key-form">
     {{ form.csrf_token }}
     {{ render_field(form.namespace) }}
-    {{ render_field(form.layout_id) }}
     {{ render_field(form.timezone) }}
     {{ render_field(form.local_first_send_interval_start) }}
     {{ render_field(form.local_first_send_interval_end) }}
+
+    {% with field=form.layout_id %}
+        <div class="form-group{% if field.errors %} has-error{% endif %}">
+            <label for="{{ field.id }}" class="col-md-3 control-label">{{ field.label.text }}</label>
+            <div class="col-md-4">
+                {{ field(class_='form-control')|safe }}
+                {% if field.description %}
+                    <span class="help-block">{{ field.description }}</span>
+                {% endif %}
+                {% for error in field.errors %}
+                    <span class="help-block error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            <button class="btn btn-primary" type="submit" id="create-layout">Создать шаблон</button>
+            {# Workaround #}
+            {# https://bitbucket.org/ianb/webtest/issue/45/html5-form-associated-inputs-break-webtest #}
+            <script>$('#create-layout').attr('form', 'layout-form');</script>
+        </div>
+    {% endwith %}
+    
     {{ render_field(form.is_enabled) }}
+
     <hr>
     <div class="form-group">
         <div class='col-md-offset-3 col-md-9'>
@@ -23,4 +43,6 @@
         </div>
     </div>
 </form>
+
+<form method="POST" action="{{ url_for('.layout') }}" id="layout-form"></form>
 {% endblock %}

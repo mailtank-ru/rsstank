@@ -1,4 +1,4 @@
-# coding: utf-8
+#g coding: utf-8
 import json
 
 import mock
@@ -79,7 +79,7 @@ class TestUpdateFeeds(TestCase):
 
         httpretty.register_uri(
             httpretty.GET,
-            '{}/tags'.format(self.app.config['MAILTANK_API_URL']),
+            '{}/tags/'.format(self.app.config['MAILTANK_API_URL']),
             body=request_callback)
 
         a_key = AccessKey(namespace='a', content='one', is_enabled=True)

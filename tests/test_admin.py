@@ -46,7 +46,7 @@ class TestAdmin(TestCase):
     def test_auth(self):
         """Клиент может зайти по ключу Mailtank. Если ключа не было, он создается"""
         httpretty.register_uri(
-            httpretty.GET, '{}/tags'.format(self.app.config['MAILTANK_API_URL']),
+            httpretty.GET, '{}/tags/'.format(self.app.config['MAILTANK_API_URL']),
             responses=[
                 httpretty.Response(body='', status=403),
                 httpretty.Response(body=json.dumps(TAGS_DATA),
@@ -76,7 +76,7 @@ class TestAdmin(TestCase):
         r = self.client.get(self.key_url)
 
         # Изменяем маску (пространство имен)
-        form = r.form
+        form = r.forms['key-form']
         form['namespace'] = 'mask'
         r = form.submit()
 
@@ -119,7 +119,7 @@ class TestAdmin(TestCase):
         r = self.client.get(self.key_url)
 
         # Пользователь может установить часовой пояс и сохранить его
-        form = r.form
+        form = r.forms['key-form']
 
         form['timezone'] = 'UTC'
         r = form.submit()
@@ -134,7 +134,7 @@ class TestAdmin(TestCase):
         assert key.timezone == 'Europe/Moscow'
 
         # Пользователь может изменить начало и конец периода
-        form = r.form
+        form = r.forms['key-form']
         form['local_first_send_interval_start'] = 6
         form['local_first_send_interval_end'] = 14
         r = form.submit()
@@ -142,3 +142,21 @@ class TestAdmin(TestCase):
         key = AccessKey.query.first()
         assert key.first_send_interval_start == dt.time(hour=2)
         assert key.first_send_interval_end == dt.time(hour=10)
+    
+    @httpretty.httprettified
+    def test_create_layout(self):
+        """Кнопка "Создать шаблон" работает."""
+        httpretty.register_uri(
+            httpretty.POST, '{}/layouts/'.format(self.app.config['MAILTANK_API_URL']),
+            body=json.dumps({'id': 'qwerty'}))
+
+        self.login('the_key')
+        r = self.client.get(self.key_url)
+
+        key = AccessKey.query.first()
+        assert not key.layout_id
+        
+        r = r.forms['layout-form'].submit()
+        
+        key = AccessKey.query.first()
+        assert key.layout_id == 'qwerty'

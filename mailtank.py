@@ -75,7 +75,7 @@ class Mailtank(object):
 
         def fetch_page(n):
             return self._json(self._get(
-                urljoin(self._api_url, 'tags'),
+                urljoin(self._api_url, 'tags/'),
                 params={
                     'mask': mask,
                     # API Mailtank считает страницы с единицы
@@ -119,7 +119,7 @@ class Mailtank(object):
             'layout_id': layout_id,
             'target': target,
         }
-        if attachments:
+        if attachments is not None:
             data['attachments'] = attachments
 
         response = self._json(self._post(
@@ -127,6 +127,48 @@ class Mailtank(object):
             data=json.dumps(data)))
 
         return Mailing(response)
+
+    def create_layout(self, name, subject_markup, markup, plaintext_markup=None,
+                      base=None, id=None):
+        """Создает шаблон в Mailtank.
+
+        :param name: имя шаблона
+        :type name: str
+
+        :param subject_markup: разметка темы шаблоны
+        :type subject_markup: str
+
+        :param markup: разметка тела шаблона
+        :type markup: str
+
+        :param plaintext_markup: разметка текстовой версии шаблона
+        :type plaintext_markup: str
+        :param base: идентификатор родительского базового шаблона
+
+        :type base: str
+        
+        :param id: идентификатор шаблона
+        :type id: str
+
+        :rtype: :class:`Layout`
+        """
+        data = {
+            'name': name,
+            'subject_markup': subject_markup,
+            'markup': markup,
+        }
+        if plaintext_markup is not None:
+            data['plaintext_markup'] = plaintext_markup
+        if base is not None:
+            data['base'] = base
+        if id is not None:
+            data['id'] = id
+
+        response = self._json(self._post(
+            urljoin(self._api_url, 'layouts/'),
+            data=json.dumps(data)))
+
+        return Layout(response)
 
 
 class Tag(object):
@@ -136,7 +178,12 @@ class Tag(object):
 
 class Mailing(object):
     def __init__(self, data):
-        self.eta = data.get('eta')
         self.id = data.get('id')
-        self.status = data.get('status')
         self.url = data.get('url')
+        self.eta = data.get('eta')
+        self.status = data.get('status')
+
+
+class Layout(object):
+    def __init__(self, data):
+        self.id = data.get('id')

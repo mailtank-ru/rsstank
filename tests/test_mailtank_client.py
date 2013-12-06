@@ -72,7 +72,7 @@ class TestMailtankClient(TestCase):
             return (200, headers, json.dumps(PAGES_DATA[page - 1]))
 
         httpretty.register_uri(
-            httpretty.GET, 'http://api.mailtank.ru/tags',
+            httpretty.GET, 'http://api.mailtank.ru/tags/',
             body=request_callback)
 
         tags = self.m.get_tags()
