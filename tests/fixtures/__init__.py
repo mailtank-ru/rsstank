@@ -6,7 +6,13 @@ from rsstank.models import Feed, FeedItem
 
 def create_feed(feed_url, key):
     """Конструирует валидный :class:`Feed`."""
-    feed = Feed(access_key=key, sending_interval=60 * 60 * 24, url=feed_url)
+    feed = Feed(
+        access_key=key,
+        sending_interval=60 * 60 * 24,
+        url=feed_url,
+        channel_link='http://66.ru',
+        channel_description='gsom',
+        channel_title='title')
     feed.tag = 'rss:test:{}:{}'.format(feed.url, feed.sending_interval)
     return feed
 

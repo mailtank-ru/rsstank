@@ -88,16 +88,16 @@ class TestUpdateFeeds(TestCase):
         db.session.add_all([a_key, b_key, c_key])
         db.session.commit()
 
-        with mock.patch('rsstank.update_feeds.sync') as sync:
+        with mock.patch('rsstank.update_feeds.sync', autospec=True) as sync_mock:
             update_feeds.main()
 
             db.session.refresh(a_key)
             db.session.refresh(b_key)
 
             # Синхронизация проведена только для хорошего ключа
-            sync.assert_called_once_with(mock.ANY, a_key)
+            sync_mock.assert_called_once_with(mock.ANY, a_key)
 
-            args, kwargs = sync.call_args
+            args, kwargs = sync_mock.call_args
             tags, key = args
             assert_tags = set([tag['name'] for tag in TAGS_DATA['objects']])
             assert set(tags) == assert_tags

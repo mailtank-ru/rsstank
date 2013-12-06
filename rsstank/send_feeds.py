@@ -32,7 +32,15 @@ def send_feed(feed):
                 'tags': [feed.tag],
                 'unsubscribe_tags': [feed.tag],
             },
-            context={'items': context_items})
+            context={
+                'channel': {
+                    'link': feed.channel_link,
+                    'description': feed.channel_description,
+                    'title': feed.channel_title,
+                    'image_url': feed.channel_image_url,
+                },
+                'items': context_items,
+            })
     except mailtank.MailtankError as e:
         logger.warn('Could not create mailing for %r. Mailtank API has '
                     'returned an error: %r.', feed, e)

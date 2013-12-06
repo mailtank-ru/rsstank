@@ -57,6 +57,11 @@ def poll_feed(feed):
     response = requests.get(feed.url)
     feed_data = feedparser.parse(response.content)
 
+    feed.channel_link = feed_data.feed.link
+    feed.channel_title = feed_data.feed.title
+    feed.channel_description = feed_data.feed.subtitle
+    feed.channel_image_url = feed_data.feed.get('image', {}).get('href')
+
     items_saved_n = 0
     last_pub_date = feed.last_pub_date
     for entry in feed_data.entries:

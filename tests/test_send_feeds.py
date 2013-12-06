@@ -141,7 +141,7 @@ class TestSendFeeds(TestCase):
         # Делаем вид, что Mailtank API вернул 503
         mailtank_error_stub = MailtankErrorStub(503, 'Whoops')
         with mock.patch('mailtank.Mailtank.create_mailing',
-                        side_effect=mailtank_error_stub):
+                        autospec=True, side_effect=mailtank_error_stub):
             with testfixtures.LogCapture() as l:
                 send_feeds.send_feed(feed)
 
@@ -168,14 +168,33 @@ class TestSendFeeds(TestCase):
         db.session.commit()
 
         # Проверяем, что в рассылке не будет дублирующихся элементов фида
-
-        with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+        with mock.patch('mailtank.Mailtank.create_mailing',
+                        autospec=True) as create_mailing_mock:
             send_feeds.send_feed(feed)
-            call, args = create_mailing_mock.call_args
-            context = args['context']
-            assert len(context['items']) == 2
-            assert context['items'][1]['pub_date'] == \
-                item1.pub_date.strftime('%Y-%m-%d %H:%M:%S')
+
+        call, args = create_mailing_mock.call_args
+        context = args['context']
+        assert len(context['items']) == 2
+        assert context['items'][1]['pub_date'] == \
+            item1.pub_date.strftime('%Y-%m-%d %H:%M:%S')
+
+    def test_context_contains_channel_data(self):
+        feed = fixtures.create_feed('http://example.com/example-1.rss', self.access_key)
+        item = fixtures.create_feed_item(1)
+        feed.items.append(item)
+        db.session.add(feed)
+        db.session.commit()
+
+        with mock.patch('mailtank.Mailtank.create_mailing',
+                        autospec=True) as create_mailing_mock:
+            send_feeds.send_feed(feed)
+
+        call, args = create_mailing_mock.call_args
+        context = args['context']
+        assert context['channel']['link'] == feed.channel_link
+        assert context['channel']['description'] == feed.channel_description
+        assert context['channel']['title'] == feed.channel_title
+        assert context['channel']['image_url'] == feed.channel_image_url
 
     def test_main(self):
         # Создаём фид номер раз
@@ -216,7 +235,8 @@ class TestSendFeeds(TestCase):
         _, utc_interval_end = get_first_send_interval_as_datetimes()
         freezed_utc_now = utc_interval_end + dt.timedelta(seconds=1)
         with freezegun.freeze_time(freezed_utc_now):
-            with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+            with mock.patch('mailtank.Mailtank.create_mailing',
+                            autospec=True) as create_mailing_mock:
                 send_feeds.main()
 
         # Проверяем, что create_mailing позвался однажды
@@ -239,7 +259,8 @@ class TestSendFeeds(TestCase):
         # Случай номер 2
         # ==============
         # Запускаем команду в это же время во второй раз. Ничего не должно произойти
-        with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+        with mock.patch('mailtank.Mailtank.create_mailing',
+                        autospec=True) as create_mailing_mock:
             with freezegun.freeze_time(freezed_utc_now):
                 send_feeds.main()
                 assert not create_mailing_mock.called
@@ -262,7 +283,8 @@ class TestSendFeeds(TestCase):
             utc_now=freezed_utc_now)
 
         with freezegun.freeze_time(freezed_utc_now):
-            with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+            with mock.patch('mailtank.Mailtank.create_mailing',
+                            autospec=True) as create_mailing_mock:
                 send_feeds.main()
 
         # Проверяем, что создались _две_ рассылки (для первого фида
