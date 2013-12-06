@@ -86,12 +86,22 @@ class TestAdmin(TestCase):
         assert a.namespace == 'mask'
 
         # Изменяем состояние на "Включен"
-        form['is_enabled'] = 1
+        form['is_enabled'] = True
         r = form.submit()
+        assert (u'необходимо заполнить это поле' in 
+                r.context['form'].layout_id.errors[0])
+        
+        assert not a.is_enabled
+        
+        # Изменяем состояние на "Включен"
+        form['is_enabled'] = True
+        # И при этом указываем идентификатор шаблона
+        form['layout_id'] = '84sad823'
+        form.submit().follow()
 
         a = AccessKey.query.first()
-        assert a.content == 'the_key'
         assert a.is_enabled
+        assert a.content == 'the_key'
         assert a.namespace == 'mask'
 
     def test_time_conversion_functions(self):
@@ -118,7 +128,7 @@ class TestAdmin(TestCase):
         assert key.timezone == 'UTC'
 
         form['timezone'] = 'Europe/Moscow'
-        r = form.submit()
+        r = form.submit().follow()
 
         key = AccessKey.query.first()
         assert key.timezone == 'Europe/Moscow'

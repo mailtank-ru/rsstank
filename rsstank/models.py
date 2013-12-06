@@ -32,6 +32,8 @@ class AccessKey(db.Model):
     #: Окончание интервала первой рассылки в utc
     first_send_interval_end = db.Column(
         db.Time(), default=default_interval_stop)
+    #: Идентификатор шаблона в Mailtank
+    layout_id = db.Column(db.String(255)) 
 
     @property
     def mailtank(self):

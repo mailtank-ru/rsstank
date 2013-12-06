@@ -20,7 +20,7 @@ def index():
             key.mailtank.get_tags()
         except MailtankError as e:
             form.mailtank_key.errors.append(
-                u'Невозможно войти по такому ключу Mailtank из-за ошибки'
+                u'Невозможно войти по такому ключу Mailtank из-за ошибки '
                 u'"{}"'.format(e))
         else:
             session['key'] = key.content
@@ -35,7 +35,7 @@ def index():
 @app.route('/key/', methods=['GET', 'POST'])
 def key():
     """Вьюшка, позволяющая менять настройки ключа от Mailtank в системе.
-    Ожидает, что в session лежит ключ 'key', уже созданный в базе данных.
+    Ожидает, что в session лежит ключ 'key', уже присутствующий в базе данных.
     """
     key_content = session.get('key') or abort(403)
     key = AccessKey.query.filter_by(content=key_content).first_or_404()
@@ -53,5 +53,6 @@ def key():
         form.populate_obj(key)
         db.session.add(key)
         db.session.commit()
+        return redirect(url_for('.key'))
 
     return render_template('key.html', key=key, form=form)

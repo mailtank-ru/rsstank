@@ -6,6 +6,20 @@ import wtforms
 from flask.ext import wtf
 
 
+class RequiredIf(wtforms.validators.Required):
+    def __init__(self, other_field_name, *args, **kwargs):
+        self.other_field_name = other_field_name
+        super(RequiredIf, self).__init__(*args, **kwargs)
+
+    def __call__(self, form, field):
+        other_field = form._fields.get(self.other_field_name)
+        if other_field is None:
+            raise Exception('No field named "%s" in the form.'.format(
+                self.other_field_name))
+        if other_field.data:
+            super(RequiredIf, self).__call__(form, field)
+
+
 class AuthForm(wtf.Form):
     """Форма аутентификации по ключу"""
     mailtank_key = wtforms.TextField(u'Ключ проекта Mailtank', [wtforms.validators.Required()])
@@ -43,6 +57,10 @@ class KeyForm(wtf.Form):
                                       [wtforms.validators.NumberRange(0, 1)])
     namespace = wtforms.TextField(u'Пространство имен (маска для тегов)',
                                   [wtforms.validators.Required()])
+    layout_id = wtforms.TextField(u'Идентификатор шаблона',
+                                  [RequiredIf('is_enabled', message=
+                                      u'Чтобы активировать ключ, необходимо '
+                                      u'заполнить это поле.')])
     timezone = wtforms.SelectField(u'Часовой пояс',
                                    choices=[(tz, tz) for tz in pytz.common_timezones])
     local_first_send_interval_start = \

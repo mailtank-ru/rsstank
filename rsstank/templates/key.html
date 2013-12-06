@@ -9,6 +9,7 @@
 <form method="POST" class="form-horizontal col-md-9" role="form">
     {{ form.csrf_token }}
     {{ render_field(form.namespace) }}
+    {{ render_field(form.layout_id) }}
     {{ render_field(form.timezone) }}
     {{ render_field(form.local_first_send_interval_start) }}
     {{ render_field(form.local_first_send_interval_end) }}
