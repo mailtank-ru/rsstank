@@ -27,19 +27,28 @@ def send_feed(feed):
                           # пустую рассылку
     try:
         feed.access_key.mailtank.create_mailing(
-            target={'tags': [feed.tag]},
+            layout_id=feed.access_key.layout_id,
+            target={
+                'tags': [feed.tag],
+                'unsubscribe_tags': [feed.tag],
+            },
             context={'items': context_items})
     except mailtank.MailtankError as e:
         logger.warn('Could not create mailing for %r. Mailtank API has '
                     'returned an error: %r.', feed, e)
     else:
         feed.last_sent_at = dt.datetime.utcnow()
+        logger.info('%i items have been sent from %r.', len(unique_items), feed)
 
 
 def main():
     """Создаёт рассылки по всем фидам, относящимся ко включенным ключам."""
-    for feed in Feed.query.join(AccessKey).filter(AccessKey.is_enabled == True):
+    logger.info('send_feeds has started.')
+
+    for feed in Feed.query.join(AccessKey).filter_by(is_enabled=True):
         if feed.is_it_time_to_send() and feed.are_there_items_to_send():
             send_feed(feed)
             db.session.add(feed)
             db.session.commit()
+
+    logger.info('send_feeds has finished.')

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>{% block title %}rsstank{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" type="text/css">
+    <script src="{{ url_for('static', filename='js/jquery-2.0.3.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 </head>
 <body>
     <div class="container">
@@ -15,7 +17,5 @@
         {% endblock %}
         </div>
     </div>
-    <script src="{{ url_for('static', filename='js/jquery-2.0.3.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 </body>
 </html>

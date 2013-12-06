@@ -146,7 +146,7 @@ class Mailtank(object):
         :param base: идентификатор родительского базового шаблона
 
         :type base: str
-        
+
         :param id: идентификатор шаблона
         :type id: str
 
