@@ -54,6 +54,7 @@ class TestCleanup(TestCase):
         db.session.commit()
 
         # Проверяем, что процедура чистки вызывается для всех фидов
-        with mock.patch('rsstank.cleanup.delete_sent_feed_items') as delete:
+        with mock.patch('rsstank.cleanup.delete_sent_feed_items',
+                        autospec=True) as delete_mock:
             cleanup.main()
-            assert delete.call_count == 2
+            assert delete_mock.call_count == 2

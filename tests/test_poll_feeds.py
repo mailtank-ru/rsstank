@@ -207,7 +207,7 @@ class TestPollFeeds(TestCase):
             call_datetimes_by_hosts[host].append(dt.datetime.utcnow())
 
         with mock.patch('rsstank.poll_feeds.poll_feed',
-                        side_effect=side_effect) as poll_feed_mock:
+                        autospec=True, side_effect=side_effect) as poll_feed_mock:
             poll_feeds.main()
 
         def assert_deltas_equal(sequence, x, precision):

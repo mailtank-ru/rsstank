@@ -141,7 +141,7 @@ class TestSendFeeds(TestCase):
         # Делаем вид, что Mailtank API вернул 503
         mailtank_error_stub = MailtankErrorStub(503, 'Whoops')
         with mock.patch('mailtank.Mailtank.create_mailing',
-                        side_effect=mailtank_error_stub):
+                        autospec=True, side_effect=mailtank_error_stub):
             with testfixtures.LogCapture() as l:
                 send_feeds.send_feed(feed)
 
@@ -168,7 +168,8 @@ class TestSendFeeds(TestCase):
         db.session.commit()
 
         # Проверяем, что в рассылке не будет дублирующихся элементов фида
-        with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+        with mock.patch('mailtank.Mailtank.create_mailing',
+                        autospec=True) as create_mailing_mock:
             send_feeds.send_feed(feed)
 
         call, args = create_mailing_mock.call_args
@@ -184,7 +185,8 @@ class TestSendFeeds(TestCase):
         db.session.add(feed)
         db.session.commit()
 
-        with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+        with mock.patch('mailtank.Mailtank.create_mailing',
+                        autospec=True) as create_mailing_mock:
             send_feeds.send_feed(feed)
 
         call, args = create_mailing_mock.call_args
@@ -233,7 +235,8 @@ class TestSendFeeds(TestCase):
         _, utc_interval_end = get_first_send_interval_as_datetimes()
         freezed_utc_now = utc_interval_end + dt.timedelta(seconds=1)
         with freezegun.freeze_time(freezed_utc_now):
-            with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+            with mock.patch('mailtank.Mailtank.create_mailing',
+                            autospec=True) as create_mailing_mock:
                 send_feeds.main()
 
         # Проверяем, что create_mailing позвался однажды
@@ -256,7 +259,8 @@ class TestSendFeeds(TestCase):
         # Случай номер 2
         # ==============
         # Запускаем команду в это же время во второй раз. Ничего не должно произойти
-        with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+        with mock.patch('mailtank.Mailtank.create_mailing',
+                        autospec=True) as create_mailing_mock:
             with freezegun.freeze_time(freezed_utc_now):
                 send_feeds.main()
                 assert not create_mailing_mock.called
@@ -279,7 +283,8 @@ class TestSendFeeds(TestCase):
             utc_now=freezed_utc_now)
 
         with freezegun.freeze_time(freezed_utc_now):
-            with mock.patch('mailtank.Mailtank.create_mailing') as create_mailing_mock:
+            with mock.patch('mailtank.Mailtank.create_mailing',
+                            autospec=True) as create_mailing_mock:
                 send_feeds.main()
 
         # Проверяем, что создались _две_ рассылки (для первого фида
