@@ -1,5 +1,6 @@
 #!/bin/bash
 /usr/bin/mysqld_safe &
+sleep 5
 mysql -e 'create database rsstank_test character set utf8 collate utf8_general_ci;'
 
 pip install -r ./requirements/basic.txt
