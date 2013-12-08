@@ -7,5 +7,4 @@ pip install -r ./requirements/basic.txt
 pip install -r ./requirements/dev.txt
 
 cp ./rsstank/config_local.py-travis ./rsstank/config_local.py
-
 ./test.sh
