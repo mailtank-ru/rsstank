@@ -230,9 +230,10 @@ class TestSendFeeds(TestCase):
         # Заявляем, что в последний раз посылали первый фид три дня назад
         feed_1.last_sent_at = dt.datetime.utcnow() - dt.timedelta(days=4)
 
-        # Замораживаем время где-нибудь сегодня, но точно вне интервала,
+        # Замораживаем время где-нибудь в будущем, но точно вне интервала,
         # допускающего посылку вида впервые
-        _, utc_interval_end = get_first_send_interval_as_datetimes()
+        _, utc_interval_end = get_first_send_interval_as_datetimes(
+            utc_now=dt.datetime.utcnow() + dt.timedelta(days=1))
         freezed_utc_now = utc_interval_end + dt.timedelta(seconds=1)
         with freezegun.freeze_time(freezed_utc_now):
             with mock.patch('mailtank.Mailtank.create_mailing',
