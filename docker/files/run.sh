@@ -14,5 +14,5 @@ RSSTANK_CONFIG=rsstank.config_local.ProductionConfig ./manage.py db upgrade head
 
 mkdir -p /logs/supervisor
 touch /logs/cron.log
-chmod 777 /logs/cron.log
+chmod 666 /logs/cron.log
 supervisord -n
