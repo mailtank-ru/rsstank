@@ -3,7 +3,7 @@ SHELL=/bin/bash
 RSSTANK_CONFIG=rsstank.config_local.ProductionConfig
 
 # m  h  dom mon dow user      command
-  0  0   *   *   *  rsstank   cd /home/rsstank/src && ./manage.py cleanup
-  0  */1 *   *   *  rsstank   cd /home/rsstank/src && ./manage.py update_feeds
-  20 */3 *   *   *  rsstank   cd /home/rsstank/src && ./manage.py poll_feeds
-  10 */1 *   *   *  rsstank   cd /home/rsstank/src && ./manage.py send_feeds
+  0  0   *   *   *  rsstank   cd /home/rsstank/src && ./manage.py cleanup 2>&1 | logger -p cron.info -i
+  0  */1 *   *   *  rsstank   cd /home/rsstank/src && ./manage.py update_feeds 2>&1 | logger -p cron.info -i
+  20 */3 *   *   *  rsstank   cd /home/rsstank/src && ./manage.py poll_feeds 2>&1 | logger -p cron.info -i
+  10 */1 *   *   *  rsstank   cd /home/rsstank/src && ./manage.py send_feeds 2>&1 | logger -p cron.info -i
