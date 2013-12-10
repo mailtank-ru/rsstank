@@ -98,6 +98,11 @@ class Mailtank(object):
 
         return rv
 
+    def get_project(self):
+        """Возвращает текущий проект :class:`Project`"""
+        response = self._json(self._get(urljoin(self._api_url, 'project')))
+        return Project(response)
+
     def create_mailing(self, layout_id, context, target, attachments=None):
         """Создает и выполняет рассылку Mailtank. Возвращает :class:`Mailing`
         :param layout_id: идентификатор шаблона, который будет
@@ -187,3 +192,9 @@ class Mailing(object):
 class Layout(object):
     def __init__(self, data):
         self.id = data.get('id')
+
+
+class Project(object):
+    def __init__(self, data):
+        self.name = data.get('name')
+        self.from_email = data.get('from_email')

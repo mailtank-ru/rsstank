@@ -59,6 +59,11 @@ MAILING_DATA = {
     'url': '/mailings/16'
 }
 
+PROJECT_DATA = {
+    'name': 'Pumpurum',
+    'from_email': 'no-reply@pumpurum.ru'
+}
+
 
 class TestMailtankClient(TestCase):
     def setup_method(self, method):
@@ -106,3 +111,14 @@ class TestMailtankClient(TestCase):
             mailing = self.m.create_mailing('e25388fde8', {}, {})
 
         assert str(excinfo.value) == '500 <Response [500]>'
+
+    @httpretty.httprettified
+    def test_get_project(self):
+        httpretty.register_uri(
+            httpretty.GET, 'http://api.mailtank.ru/project',
+            body=json.dumps(PROJECT_DATA))
+
+        project = self.m.get_project()
+
+        assert project.name == 'Pumpurum'
+        assert project.from_email == 'no-reply@pumpurum.ru'

@@ -69,4 +69,3 @@ def layout():
     key.layout_id = layout.id
     db.session.commit()
     return redirect(url_for('.key'))
-            
