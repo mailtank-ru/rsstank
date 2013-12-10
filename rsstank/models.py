@@ -33,11 +33,15 @@ class AccessKey(db.Model):
     first_send_interval_end = db.Column(
         db.Time(), default=default_interval_stop)
     #: Идентификатор шаблона в Mailtank
-    layout_id = db.Column(db.String(255)) 
+    layout_id = db.Column(db.String(255))
 
     @property
     def mailtank(self):
         return Mailtank(app.config['MAILTANK_API_URL'], self.content)
+
+    @property
+    def project(self):
+        return self.mailtank.get_project()
 
 
 class Feed(db.Model):

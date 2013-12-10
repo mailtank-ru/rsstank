@@ -5,6 +5,7 @@
 
 {% block content %}
 <h1>Ключ {{ key.content }}</h1>
+<legend>Проект <b>{{ key.project.name }}</b> c е-mail адресом <b>{{ key.project.from_email }}</b></legend>
 
 <form method="POST" class="form-horizontal col-md-9" role="form" id="key-form">
     {{ form.csrf_token }}
