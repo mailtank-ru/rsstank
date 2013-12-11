@@ -9,7 +9,6 @@ from . import TestCase
 from rsstank import update_feeds, db
 from rsstank.update_feeds import sync
 from rsstank.models import AccessKey, Feed
-from mailtank import Tag
 
 
 TAGS_DATA = {
