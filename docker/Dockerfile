@@ -5,10 +5,11 @@ RUN apt-get -y update
 RUN apt-get -y install cron unzip wget python-dev python-pip supervisor libmysqlclient-dev postfix rsyslog
 RUN pip install distribute==0.6.34
 RUN pip install uwsgi
-RUN useradd -m -d /home/rsstank -s /usr/sbin/nologin rsstank
+RUN useradd -m -d /home/rsstank -s /bin/bash rsstank
 RUN wget --no-check-certificate https://github.com/mailtank-ru/rsstank/archive/master.zip -O /tmp/rsstank.zip
 RUN unzip /tmp/rsstank.zip -d /tmp/
 RUN mv /tmp/rsstank-master /home/rsstank/src/
+RUN apt-get -y install git
 RUN pip install --use-mirrors -r /home/rsstank/src/requirements/basic.txt
 
 # List ADD directives as late as possible because everything after ADD won't be cached
@@ -23,3 +24,4 @@ ADD ./files/crontab /etc/crontab
 ADD ./files/cron-rsyslog.conf /etc/rsyslog.d/60-cron.conf
 RUN chown root:root /etc/supervisor/conf.d/* /home/rsstank/uwsgi.ini /etc/crontab /etc/rsyslog.d/60-cron.conf
 RUN chmod +x /home/rsstank/run.sh
+RUN chmod 644 /etc/crontab
