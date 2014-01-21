@@ -12,3 +12,4 @@ EOF
 
 cp ./rsstank/config_local.py-travis ./rsstank/config_local.py
 ./test.sh
+
