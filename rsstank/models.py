@@ -106,7 +106,7 @@ class Feed(db.Model):
         latest_created_at = self.items.with_entities(
             db.func.max(FeedItem.created_at)
         ).scalar()
-        if self.last_sent_at:
+        if self.last_sent_at and latest_created_at:
             return self.last_sent_at < latest_created_at
         else:
             return bool(latest_created_at)

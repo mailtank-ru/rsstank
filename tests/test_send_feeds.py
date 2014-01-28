@@ -104,6 +104,8 @@ class TestSendFeeds(TestCase):
         feed.last_sent_at = dt.datetime.utcnow() - dt.timedelta(days=3)
         db.session.add(feed)
 
+        assert not feed.are_there_items_to_send()
+
         for i in range(10):
             feed_item = fixtures.create_feed_item(i)
             feed_item.created_at = dt.datetime.utcnow() - dt.timedelta(days=i)
