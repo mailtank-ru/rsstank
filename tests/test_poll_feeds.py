@@ -212,7 +212,7 @@ class TestPollFeeds(TestCase):
 
         def assert_deltas_equal(sequence, x, precision):
             deltas = [next_el - el for el, next_el in zip(sequence, sequence[1:])]
-            assert all(x < delta < x + precision for delta in deltas)
+            assert all((x < delta < x + precision) for delta in deltas)
 
         call_datetimes = call_datetimes_by_hosts['66.ru']
         assert len(call_datetimes) == 3
