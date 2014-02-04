@@ -3,6 +3,7 @@ import datetime as dt
 
 import pytz
 import dateutil
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from mailtank import Mailtank
 from . import db, app
@@ -20,7 +21,7 @@ class AccessKey(db.Model):
     #: Содержимое ключа доступа
     content = db.Column(db.String(255), nullable=False, unique=True)
     #: Включен ли функционал rsstank для данного ключа?
-    is_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    enabled_at = db.Column(db.DateTime, nullable=True)
     #: Пространство имён ключа (используется для ограничения множества
     #: тегов, с которыми работает rsstank)
     namespace = db.Column(db.String(255), nullable=False)
@@ -34,6 +35,18 @@ class AccessKey(db.Model):
         db.Time(), default=default_interval_stop)
     #: Идентификатор шаблона в Mailtank
     layout_id = db.Column(db.String(255))
+
+    @hybrid_property
+    def is_enabled(self):
+        return bool(self.enabled_at)
+
+    @is_enabled.setter
+    def setter(self, is_enabled):
+        self.enabled_at = dt.datetime.utcnow() if is_enabled else None
+
+    @is_enabled.expression
+    def is_enabled(cls):
+        return ~db.func.isnull(cls.enabled_at)
 
     @property
     def mailtank(self):

@@ -83,6 +83,9 @@ def poll_feed(feed):
                 # Элемент опубликован раньше, чем последний элемент фида, или в
                 # то же время, значит мы его уже загружали
                 continue
+            if feed_item.pub_date < feed.access_key.enabled_at:
+                # Если элемент был опубликован раньше времени активации ключа
+                continue
 
             feed.items.append(feed_item)
             items_saved_n += 1

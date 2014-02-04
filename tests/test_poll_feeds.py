@@ -33,6 +33,7 @@ class TestPollFeeds(TestCase):
     def setup_method(self, method):
         TestCase.setup_method(self, method)
         self.access_key = AccessKey(content='123', is_enabled=True, namespace='test')
+        self.access_key.enabled_at = dt.datetime(2013, 1, 1, 0, 0, 0)
         db.session.add(self.access_key)
         db.session.commit()
 
@@ -93,6 +94,10 @@ class TestPollFeeds(TestCase):
 
     @httpretty.httprettified
     def test_poll_feed_basics(self):
+        # Дата публикации новости "оссийское правительство принимает меры
+        # для поддержки моногородов" в 66.ru-society-rss
+        self.access_key.enabled_at = dt.datetime(2013, 11, 13, 3, 34, 50)
+
         for feed_url in ('http://66.ru/news/society/rss/',
                          'http://news.yandex.ru/hardware.rss'):
             feed = fixtures.create_feed(feed_url, self.access_key)
@@ -112,7 +117,9 @@ class TestPollFeeds(TestCase):
             db.session.commit()
 
         feed_66_ru = self.access_key.feeds.filter(Feed.url.contains('66.ru')).first()
-        assert feed_66_ru.items.count() == 10
+        # В фиде 66.ру десять элементов, но только семь из них имеют дату
+        # публикации позже `access_key.enabled_at`
+        assert feed_66_ru.items.count() == 7
         item = feed_66_ru.items.filter_by(guid='66.ru:news:147137').first()
         assert item.description == u'Президент РЖД хочет заменить их двухэтажными.'
         assert feed_66_ru.channel_link == 'http://66.ru'
