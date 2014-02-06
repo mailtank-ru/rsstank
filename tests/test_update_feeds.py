@@ -26,9 +26,6 @@ TAGS_DATA = {
 class TestUpdateFeeds(TestCase):
     """Тесты внутренностей ./manage update_feeds"""
 
-    def setup_method(self, method):
-        TestCase.setup_method(self, method)
-
     def test_sync(self):
         # Проверям добавление тега
         tags = ['rss:a:http://go-go-go.rss/feed:100']
@@ -68,6 +65,11 @@ class TestUpdateFeeds(TestCase):
         tags = ['rss:a:aisudhfoiasuh']
         sync(tags, key)
         assert not Feed.query.first()
+        
+        # Проверяем случай, когда тег содержит юникодовый URL
+        tags = [u'rss:a:http://go-go-go.rss/feed?arg=привет!:200']
+        sync(tags, key)
+        assert not Feed.query.first()
 
     @httpretty.httprettified
     def test_main(self):
@@ -98,8 +100,8 @@ class TestUpdateFeeds(TestCase):
 
             args, kwargs = sync_mock.call_args
             tags, key = args
-            assert_tags = set([tag['name'] for tag in TAGS_DATA['objects']])
-            assert set(tags) == assert_tags
+            expected_tags = set([tag['name'] for tag in TAGS_DATA['objects']])
+            assert set(tags) == expected_tags
 
             # Ключ, на запрос с которым Mailtank ответил 403, выключился
             assert not b_key.is_enabled

@@ -140,7 +140,7 @@ def get_feed_ids_by_hosts():
     :rtype: {str: [int]}
     """
     rv = collections.defaultdict(list)
-    for feed in Feed.query.join(AccessKey).filter(AccessKey.is_enabled == True):
+    for feed in Feed.query.join(AccessKey).filter_by(is_enabled=True):
         host = furl(feed.url).host
         rv[host].append(feed.id)
     return rv

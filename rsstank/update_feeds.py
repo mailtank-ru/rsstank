@@ -30,6 +30,12 @@ def sync(tags, key):
             # Парсим тег
             namespace, url_and_interval = rest.split(':', 1)
             url, interval = url_and_interval.rsplit(':', 1)
+            try:
+                url = url.encode('ascii')
+            except UnicodeEncodeError as e:
+                logger.warn(u'Error during parsing tag: {0}. '
+                            u'URL is not ASCII.'.format(tag))
+                continue
             interval = int(interval)
         except ValueError as e:
             # Плохой тег
