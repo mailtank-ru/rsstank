@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def sync(tags, key):
     """Синхронизирует фиды ключа `key` rsstank в соответствии с
     тегами `tags` Mailtank.
-    
+
     :type tags: список строк
     """
     feeds = key.feeds.all()

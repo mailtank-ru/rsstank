@@ -5,6 +5,7 @@ import collections
 import mock
 import httpretty
 import feedparser
+import requests
 from furl import furl
 
 from . import TestCase, fixtures
@@ -197,9 +198,11 @@ class TestPollFeeds(TestCase):
         httpretty.register_uri(
             httpretty.GET, 'http://66.ru/robots.txt', body=ROBOTS_TXT_2)
 
-        for feed_url in ('http://66.ru/news/society/rss/',
+        for feed_url in ('http://incorrect-url',
+                         'http://66.ru/news/society/rss/',
                          'http://66.ru/news/business/rss/',
                          'http://66.ru/news/freetime/rss/',
+                         'http://66.ru/404',
                          'http://news.yandex.ru/hardware.rss',
                          'http://news.yandex.ru/fire.rss'):
             feed = fixtures.create_feed(feed_url, self.access_key)
@@ -210,8 +213,13 @@ class TestPollFeeds(TestCase):
         call_datetimes_by_hosts = collections.defaultdict(list)
 
         def side_effect(feed):
-            host = furl(feed.url).host
-            call_datetimes_by_hosts[host].append(dt.datetime.utcnow())
+            if feed.url == 'http://incorrect-urlx':
+                raise requests.ConnectionError()
+            elif feed.url == 'http://66.ru/404':
+                return
+            else:
+                host = furl(feed.url).host
+                call_datetimes_by_hosts[host].append(dt.datetime.utcnow())
 
         with mock.patch('rsstank.poll_feeds.poll_feed',
                         autospec=True, side_effect=side_effect) as poll_feed_mock:

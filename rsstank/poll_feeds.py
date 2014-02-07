@@ -54,7 +54,10 @@ def poll_feed(feed):
     """
     logger.info('Polling %r.', feed)
 
-    response = requests.get(feed.url)
+    response = requests.get(feed.url)  # requests.get следует редиректам
+    if not 200 <= response.status_code < 300:
+        logger.warn('%r returned non-20* status: %i', feed, response.status_code)
+        return
     feed_data = feedparser.parse(response.content)
 
     feed.channel_link = feed_data.feed.link
@@ -111,8 +114,13 @@ def poll_feeds(feed_ids, rules=None):
     def _process(feed_id):
         feed = Feed.query.get(feed_id)
         if not rules or rules.allowed(feed.url):
-            poll_feed(feed)
-            db.session.commit()
+            try:
+                poll_feed(feed)
+            except:
+                db.session.rollback()
+                logger.warn('There was an error during polling %r', feed, exc_info=True)
+            else:
+                db.session.commit()
         else:
             logger.warn('Accessing %r is forbidden by host\'s robots.txt.', feed)
 
