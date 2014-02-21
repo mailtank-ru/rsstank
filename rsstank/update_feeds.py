@@ -68,12 +68,12 @@ def main():
         try:
             tags = [tag.name for tag in key.mailtank.get_tags(mask=mask)]
         except MailtankError as e:
-            # Что-то пошло не так, помечаем ключ как 'выключенный'
             logger.warn(u'Error during connecting with key {0}: "{1}"'
                         .format(key.content, e))
-            key.is_enabled = False
-            db.session.add(key)
-            db.session.commit()
+            if e.code in (401, 403):
+                key.is_enabled = False
+                db.session.add(key)
+                db.session.commit()
         else:
             logger.info(u'Tags for key {} have been successfully fetched'
                         .format(key.content))

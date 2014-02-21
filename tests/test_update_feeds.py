@@ -76,6 +76,8 @@ class TestUpdateFeeds(TestCase):
         def request_callback(method, uri, headers):
             if 'rss:b:' == furl.furl(uri).args['mask']:
                 return (403, headers, '')
+            if 'rss:d:' == furl.furl(uri).args['mask']:
+                return (500, headers, '')
             return (200, headers, json.dumps(TAGS_DATA))
 
         httpretty.register_uri(
@@ -85,7 +87,8 @@ class TestUpdateFeeds(TestCase):
 
         a_key = AccessKey(namespace='a', content='one', is_enabled=True)
         b_key = AccessKey(namespace='b', content='two', is_enabled=True)
-        c_key = AccessKey(namespace='b', content='disabled', is_enabled=False)
+        c_key = AccessKey(namespace='c', content='disabled', is_enabled=False)
+        d_key = AccessKey(namespace='d', content='errored', is_enabled=True)
         db.session.add_all([a_key, b_key, c_key])
         db.session.commit()
 
@@ -105,3 +108,5 @@ class TestUpdateFeeds(TestCase):
 
             # Ключ, на запрос с которым Mailtank ответил 403, выключился
             assert not b_key.is_enabled
+            # Клюс, на который Mailtank ответил 500, остался включенным
+            assert d_key.is_enabled
