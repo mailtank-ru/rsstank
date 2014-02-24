@@ -47,7 +47,16 @@ class TestSendFeeds(TestCase):
             'author': u'Author 1',
             'guid': u'1',
             'pub_date': '2013-11-20 12:00:00',
-            'comments': u'http://66.ru/comments/1/'
+            'comments': u'http://66.ru/comments/1/',
+            'enclosure': {
+                'length': '',
+                'type': '',
+                'url': '',
+            },
+            'source': {
+                'content': '',
+                'url': '',
+            },
         }
         assert feed_item.to_context_entry() == expected_context_entry
 
@@ -56,14 +65,14 @@ class TestSendFeeds(TestCase):
         expected_context_entry['enclosure'] = {
             'url': feed_item.enclosure_url,
             'type': feed_item.enclosure_type,
-            'length': None,
+            'length': '',
         }
         assert feed_item.to_context_entry() == expected_context_entry
 
         feed_item.source_url = 'http://www.nytimes.com/2013/09/12/opinion/putin.html'
         expected_context_entry['source'] = {
             'url': feed_item.source_url,
-            'content': None,
+            'content': '',
         }
         assert feed_item.to_context_entry() == expected_context_entry
 

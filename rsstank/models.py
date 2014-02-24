@@ -204,26 +204,22 @@ class FeedItem(db.Model):
             'title': self.title,
             'link': self.link,
             'description': self.description,
-            'pub_date': self.pub_date and self.pub_date.strftime('%Y-%m-%d %H:%M:%S'),
-            'guid': self.guid,
-            'author': self.author,
-            'comments': self.comments,
-            'category': self.category,
+            'pub_date': self.pub_date and self.pub_date.strftime('%Y-%m-%d %H:%M:%S') or '',
+            'guid': self.guid or '',
+            'author': self.author or '',
+            'comments': self.comments or '',
+            'category': self.category or '',
         }
 
-        enclosure = {
-            'url': self.enclosure_url,
-            'length': self.enclosure_length,
-            'type': self.enclosure_type,
+        entry['enclosure'] = {
+            'url': self.enclosure_url or '',
+            'length': self.enclosure_length or '',
+            'type': self.enclosure_type or '',
         }
-        if any(enclosure.itervalues()):
-            entry['enclosure'] = enclosure
 
-        source = {
-            'url': self.source_url,
-            'content': self.source_content,
+        entry['source'] = {
+            'url': self.source_url or '',
+            'content': self.source_content or '',
         }
-        if any(source.values()):
-            entry['source'] = source
 
         return entry
